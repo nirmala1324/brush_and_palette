@@ -123,6 +123,24 @@ def sign_in():
             }
         )
 
+# ROUTE ARTWORK
+@app.route("/artwork", methods=["GET"])
+def get_artwork():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+
+        artwork = db.artwork.find({})
+        return render_template(
+            "fans/artwork.html", user_info=user_info, artwork=artwork
+        )
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+
+
 # ------------------------------------ ADMIN ---------------------------------------------------
 
 # RENDER PAGES
