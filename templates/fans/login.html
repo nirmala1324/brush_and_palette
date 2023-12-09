@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Log in | Brush & Pallet</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+    </script>
+
+    <!-- bootstrap-icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+    <!-- ajax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" />
+
+    <!-- Font Awesome CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+    <!-- Google font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins&display=swap"
+        rel="stylesheet">
+
+    <script>
+        //{% if msg %}
+        //    alert("{{ msg }}") 
+        //{% endif %}
+
+        function sign_in() {
+            let username = $("#input-username").val();
+            let password = $("#input-password").val();
+
+            if (username === "") {
+                $("#help-id-login").text("Please input your id.");
+                $("#input-username").focus();
+                return;
+            } else {
+                $("#help-id-login").text("");
+            }
+
+            if (password === "") {
+                $("#help-password-login").text("Please input your password.");
+                $("#input-password").focus();
+                return;
+            } else {
+                $("#help-password-login").text("");
+            }
+            console.log(username, password);
+            $.ajax({
+                type: "POST",
+                url: "/sign_in",
+                data: {
+                    username_give: username,
+                    password_give: password,
+                },
+                success: function (response) {
+                    if (response["result"] === "success") {
+                        $.cookie("mytoken", response["token"], {
+                            path: "/"
+                        });
+                        window.location.replace("/");
+                    } else {
+                        alert(response["msg"]);
+                    }
+                },
+            });
+        }
+
+        function toggle_sign_up() {
+            let LoginText = '<h1>Login!</h1>';
+            let registerText = '<h1>Register</h1>';
+            let isSignUpBoxHidden = $("#sign-up-box").hasClass("is-hidden");
+
+            if (isSignUpBoxHidden) {
+                $("#header").html(registerText); // Change to 'Register' text
+            } else {
+                $("#header").html(LoginText); // Change back to 'Welcome back!' text
+            }
+
+            $("#div-sign-in-or-up").toggleClass("is-hidden")
+            $("#sign-up-box").toggleClass("is-hidden")
+            $("#btn-check-dup").toggleClass("is-hidden")
+            $("#help-id").toggleClass("is-hidden")
+            $("#help-password").toggleClass("is-hidden")
+            $("#help-password2").toggleClass("is-hidden")
+
+            $("#help-name").toggleClass("is-hidden")
+            $("#help-address").toggleClass("is-hidden")
+            $("#help-phone").toggleClass("is-hidden")
+        }
+
+        function is_nickname(asValue) {
+            var regexp = /^(?=.*[a-zA-Z])[a-zA-Z0-9-_.]{2,10}$/
+            return regexp.test(asValue)
+        }
+
+        function is_password(asValue) {
+            var regexp = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z!@#$%^&*]{8,20}$/;
+            return regexp.test(asValue)
+        }
+
+        function check_dup() {
+            let username = $("#input-username").val();
+            if (username === "") {
+                $("#help-id")
+                    .text("Enter in your id")
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-username").focus();
+                return;
+            }
+            if (!is_nickname(username)) {
+                $("#help-id")
+                    .text(
+                        "Please check your id. For your id, please enter 2-10 characters, numbers, or the following special characters ( . _ - )"
+                    )
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-username").focus();
+                return;
+            }
+            $("#help-id").addClass("is-loading");
+            $.ajax({
+                type: "POST",
+                url: "/sign_up/check_dup",
+                data: {
+                    username_give: username,
+                },
+                success: function (response) {
+                    if (response["exists"]) {
+                        $("#help-id")
+                            .text("This ID has been taken. Please choose a different ID for registration.")
+                            .removeClass("is-safe")
+                            .addClass("is-danger");
+                        $("#input-username").focus();
+                    } else {
+                        $("#help-id")
+                            .text("This ID is available and ready for registration!")
+                            .removeClass("is-danger")
+                            .addClass("is-success");
+                    }
+                    $("#help-id").removeClass("is-loading");
+                },
+            });
+        }
+
+        function sign_up() {
+            let username = $("#input-username").val();
+            let password = $("#input-password").val();
+            let password2 = $("#input-password2").val();
+
+            let name = $("#input-name").val();
+            let address = $("#input-address").val();
+            let phone = $("#input-phone").val();
+
+            if (!username) {
+                $("#help-id")
+                    .text("Please enter your ID!")
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-username").focus();
+                return;
+            }
+
+            if ($("#help-id").hasClass("is-danger")) {
+                alert("Please check your id!");
+                return;
+            } else if (!$("#help-id").hasClass("is-success")) {
+                alert("Please check your id, something is wrong!");
+                return;
+            }
+
+            if (!password) {
+                $("#help-password")
+                    .text("Please enter your password!")
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-password").focus();
+                return;
+            } else if (!is_password(password)) {
+                $("#help-password")
+                    .text(
+                        "Please check your password. For your password, please enter 8-20 characters, numbers, or the following special characters (!@#$%^&*)"
+                    )
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-password").focus();
+                return;
+            } else {
+                $("#help-password")
+                    .text("This password can be used!")
+                    .removeClass("is-danger")
+                    .addClass("is-success");
+            }
+
+            if (password2 === "") {
+                $("#help-password2")
+                    .text("Please r-enter your password")
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-password2").focus();
+                return;
+            } else if (password2 !== password) {
+                $("#help-password2")
+                    .text("Your passwords do not match!")
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-password2").focus();
+                return;
+            } else {
+                $("#help-password2")
+                    .text("This password can be used!")
+                    .removeClass("is-danger")
+                    .addClass("is-success");
+            }
+
+            if (!name) {
+                $("#help-name")
+                    .text("Please enter your name!")
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-name").focus();
+                return;
+            } else {
+                $("#help-name")
+                    .text("Please enter your name!")
+                    .removeClass("is-danger")
+                    .addClass("is-success");
+            }
+
+            if (!address) {
+                $("#help-address")
+                    .text("Please enter your address!")
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-address").focus();
+                return;
+            } else {
+                $("#help-address")
+                    .text("Please enter your address!")
+                    .removeClass("is-danger")
+                    .addClass("is-success");
+            }
+
+            if (!phone) {
+                $("#help-phone")
+                    .text("Please enter your phone!")
+                    .removeClass("is-safe")
+                    .addClass("is-danger");
+                $("#input-phone").focus();
+                return;
+            } else {
+                $("#help-phone")
+                    .text("Please enter your phone!")
+                    .removeClass("is-danger")
+                    .addClass("is-success");
+            }
+
+
+            $.ajax({
+                type: "POST",
+                url: "/sign_up/save",
+                data: {
+                    username_give: username,
+                    password_give: password,
+                    name_give: name,
+                    address_give: address,
+                    phone_give: phone,
+                },
+                success: function (response) {
+                    alert("Your are signed up! Nice!");
+                    window.location.replace("/login");
+                },
+            });
+        }
+
+        function clearInputs() {
+            $("#input-username").val("");
+            $("#input-password").val("");
+            $("#input-password2").val("");
+
+            $("#input-name").val("");
+            $("#input-address").val("");
+            $("#input-phone").val("");
+        }
+    </script>
+
+    <style>
+        * {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+            min-height: 100vh;
+        }
+
+        .section {
+            padding: 1rem 1.5rem;
+            max-width: 750px;
+            margin: auto;
+        }
+
+        .title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 5rem;
+            color: #fff;
+        }
+
+        .subtitle {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        /* WARNA TEXT SWEETER The sweetest site */
+        .is-sparta {
+            color: #fff !important;
+        }
+
+        /* WARNA BUTTON SIGN IN */
+        .button.is-sparta {
+            background-color: #131312;
+            border-color: transparent;
+            color: #fff !important;
+        }
+
+        /* WARNA BUTTON SIGN UP */
+        .button.is-sparta.is-outlined {
+            background-color: transparent;
+            border-color: #131312;
+            color: #131312 !important;
+        }
+
+        .help {
+            color: gray;
+        }
+
+        .box {
+            background-color: #fff;
+            box-shadow: rgba(0, 0, 0, 0.4) 1px 2px 2px;
+            border-radius: 20px;
+            box-sizing: border-box;
+            padding: 20px 30px;
+            transition: .4s ease-in-out;
+        }
+
+        .box:hover {
+            transform: translateX(-0.5em) translateY(-0.5em);
+            border: 1px solid #171717;
+            box-shadow: 10px 10px 0px rgba(23, 23, 23, 0.7);
+            /* Pudarkan warna hitam */
+        }
+
+        #header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 32;
+            line-height: 48px;
+
+            color: black;
+        }
+
+        #header p {
+            font-family: 'Poppins', sans-serif;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 14;
+            line-height: 21px;
+            color: gray;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="hero">
+        <div class="hero-body has-text-centered">
+            <h1 class="title">Join Our Community</h1>
+            <h3 class="subtitle">To interact, and benefit from special features. Log in
+                immediately to start exploring our world and discover interesting works of art!</h3>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="box" style="max-width: 480px; margin: auto;">
+                <article class="media">
+                    <div class="media-content">
+                        <div class="content">
+
+                            <div id="header" class="content has-text-centered">
+                                <h1>Login!</h1>
+                                <p>
+                                    Welcome back! Please enter your details.
+                                </p>
+                            </div>
+
+                            <div class="field has-addons">
+                                <div class="control has-icons-left" style="width: 100%">
+                                    <input id="input-username" class="input" type="text" placeholder="id" />
+                                    <span class="icon is-small is-left"><i class="bi bi-person-fill-lock"></i></span>
+                                </div>
+                                <div id="btn-check-dup" class="control is-hidden">
+                                    <button class="button is-sparta" onclick="check_dup()">
+                                        Check your id
+                                    </button>
+                                </div>
+                            </div>
+                            <p id="help-id" class="help is-hidden">
+                                Your id should contain 2-10 characters with a combination of numbers, or
+                                the following special characters (._-)
+                            </p>
+                            <p id="help-id-login" class="help is-danger"></p>
+
+                            <div class="field">
+                                <div class="control has-icons-left">
+                                    <input id="input-password" class="input" type="password" placeholder="password" />
+                                    <span class="icon is-small is-left"><i class="fa fa-lock"></i></span>
+                                </div>
+                                <p id="help-password" class="help is-hidden">
+                                    Your password should contain 8-20 characters with a combination of numbers, or the
+                                    following special characters (!@#$%^&*).
+                                </p>
+                                <p id="help-password-login" class="help is-danger"></p>
+                            </div>
+                        </div>
+                        <div id="div-sign-in-or-up" class="has-text-centered">
+                            <nav class="level is-mobile">
+                                <button class="level-item button is-sparta" onclick="sign_in()">
+                                    Sign In
+                                </button>
+                                <button class="level-item button is-sparta is-outlined" onclick="clearInputs()">
+                                    Clear
+                                </button>
+
+                            </nav>
+                            <hr />
+                            <h4 class="mb-3">Don't have an account?</h4>
+                            <nav class="level is-mobile">
+                                <button class="level-item button is-sparta is-outlined" onclick="toggle_sign_up()">
+                                    Sign Up
+                                </button>
+                            </nav>
+                        </div>
+
+                        <div id="sign-up-box" class="is-hidden">
+                            <div class="mb-5">
+                                <div class="field">
+                                    <div class="control has-icons-left" style="width: 100%">
+                                        <input id="input-password2" class="input" type="password"
+                                            placeholder="Confirm your password" />
+                                        <span class="icon is-small is-left"><i class="fa fa-lock"></i></span>
+                                    </div>
+                                    <p id="help-password2" class="help is-hidden">
+                                        Please enter in your password again
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- tambahan -->
+                            <div class="mb-5">
+                                <div class="field has-addons">
+                                    <div class="control has-icons-left" style="width: 100%">
+                                        <input id="input-name" class="input" type="text" placeholder="name" />
+                                        <span class="icon is-small is-left"><i class="bi bi-person-circle"></i></span>
+                                    </div>
+                                </div>
+                                <p id="help-name" class="help is-hidden">
+                                    Please input your name
+                                </p>
+                            </div>
+
+                            <div class="mb-5">
+                                <div class="field has-addons">
+                                    <div class="control has-icons-left" style="width: 100%">
+                                        <input id="input-address" class="input" type="text" placeholder="Address" />
+                                        <span class="icon is-small is-left"><i class="bi bi-geo-alt-fill"></i></span>
+                                    </div>
+                                </div>
+                                <p id="help-address" class="help is-hidden">
+                                    Please input your address
+                                </p>
+                            </div>
+
+                            <div class="mb-5">
+                                <div class="field has-addons">
+                                    <div class="control has-icons-left" style="width: 100%">
+                                        <input id="input-phone" class="input" type="number" placeholder="Phone" />
+                                        <span class="icon is-small is-left"><i class="bi bi-telephone-fill"></i></span>
+                                    </div>
+                                </div>
+                                <p id="help-phone" class="help is-hidden">
+                                    Please input your phone number
+                                </p>
+                            </div>
+                            <nav class="level is-mobile">
+                                <button class="level-item button is-sparta" onclick="sign_up()">
+                                    Sign Up
+                                </button>
+                                <button class="level-item button is-sparta is-outlined" onclick="toggle_sign_up()">
+                                    Cancel
+                                </button>
+                                <button class="level-item button is-sparta is-outlined" onclick="clearInputs()">
+                                    Clear
+                                </button>
+
+                            </nav>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>
