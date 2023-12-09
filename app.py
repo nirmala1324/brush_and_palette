@@ -106,7 +106,8 @@ def sign_in():
             "id": username_receive,
             "exp": datetime.utcnow() + timedelta(seconds=60 * 60 * 24),
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256").decode('utf-8')
+        
         return jsonify(
             {
                 "result": "success",
@@ -150,6 +151,16 @@ def menu_user():
         return render_template('admin/menu_user.html', user_info = user_info, user_data = user_data)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
+    
+
+@app.route('/artist')
+def artists():
+    return render_template('artist.html')
+
+@app.route('/artist/<artist_id>')
+def artist_detail(artist_id):
+    artist_data = db.artist_collection.find_one({'_id': artist_id})
+    return render_template('artist_detail.html', artist_id=artist_id, artist_data=artist_data)
     
 @app.route('/admin/artwork')
 def menu_artwork():
