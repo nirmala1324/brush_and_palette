@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brush&Palette | Admin Dashboard</title>
+
+    <!-- Bulma CSS -->
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" /> -->
+    <!-- Font Awesome CSS -->
+    <!-- <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" /> -->
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+
+    <!-- Chart.js CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome CSS (Add this line to include the icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+    <!-- FONT -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Poppins&display=swap" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f8f9fa;
+      }
+      
+      .btn-bp {
+        background-color: #fccf55;
+      }
+      
+      #sidebar {
+        height: 100%;
+        width: 250px;
+        position: fixed;
+        background-color: black;
+        padding-top: 20px;
+        transition: margin-left 0.3s;
+        color: #fff;
+      }
+      
+      #sidebar a {
+        padding: 8px 16px;
+        text-decoration: none;
+        font-size: 18px;
+        color: #818181;
+        display: block;
+        transition: color 0.3s;
+      }
+      
+      #sidebar a i {
+        margin-right: 8px;
+      }
+      
+      #sidebar a:hover {
+        color: #f1f1f1;
+      }
+      
+      #sidebar a.active {
+        color: #fff;
+        background-color: #495057;
+      }
+      
+      #content {
+        margin-left: 250px;
+        padding: 40px 60px 40px 60px;
+      }
+      
+      #navbar {
+        background-color: #343a40;
+        color: #fff;
+      }
+      
+      #navbar a {
+        color: #fff;
+        text-decoration: none;
+      }
+      
+      #navbar a:hover {
+        color: #f1f1f1;
+      }
+      
+      #toggle-btn {
+        background-color: #343a40;
+        color: #fff;
+        border: none;
+        padding: 10px;
+        margin-right: 10px;
+      }
+      
+      #toggle-icon {
+        font-size: 24px;
+      }
+      
+      .total-data {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      .pie-chart {
+        max-width: 250px;
+        margin: 0 auto;
+      }
+      
+      /* Profile Dropdown */
+      .profile-dropdown {
+        position: relative;
+        display: inline-block;
+      }
+      
+      #profile-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 280px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        right: 0;
+        border-radius: 10px;
+        color: black;
+      }
+      
+      .is-rounded {
+        border-radius: 50%;
+      }
+      
+      .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="navbar">
+      <button class="btn" id="toggle-btn"><span>☰</span></button>
+      <div>
+        <img class="logo" src="/static/logo.png" style="width: 180px;" alt="Brush&Palette" />
+      </div>
+      <div class="ml-auto flex">
+        <span class="navbar-text">Welcome, {{ user_info.username }}</span>
+        <div class="profile-dropdown ml-2 flex">
+          <span id="profile-dropdown-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{{ url_for('static', filename = user_info.photo) }}" alt="Profile Image" class="is-rounded" width="48" height="48" /></span>
+          <div id="profile-dropdown-content" class="container card mt-3">
+            <div class="flex container card-body">
+              <div>
+                <img src="{{ url_for('static', filename = user_info.photo) }}" alt="Profile Image" class="is-rounded" width="65" height="65" />
+              </div>
+              <div>
+                <h5 class="mt-3">{{ user_info.fullname }}</h5>
+                <p class="text-muted">{{ user_info.username }}</p>
+              </div>
+              <div class="border-top w-100 mt-2">
+                <button onclick="logout()" type="submit" class="btn btn-bp btn-block my-3">Logout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div id="sidebar">
+      <ul class="nav flex-column mt-3">
+        <li class="nav-item">
+          <a class="nav-link active" href="/admin"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/user"><i class="fas fa-users"></i> User Data</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/artwork"><i class="fas fa-image"></i>&nbsp;&nbsp;&nbsp;Artwork</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/artist"><i class="fas fa-palette"></i>&nbsp;&nbsp;&nbsp;Artist</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/pembelian"><i class="fas fa-shopping-cart"></i>&nbsp;&nbsp;&nbsp;Pembelian</a>
+        </li>
+      </ul>
+    </div>
+
+    <div id="content" class="mt-5">
+      <!-- Content goes here -->
+      <h2>Dashboard</h2>
+      <p>Dashboard</p>
+
+      <!-- Total Data Divs -->
+      <div class="row mt-4">
+        <div class="col-lg-2">
+          <div class="total-data">
+            <h4 style="overflow: hidden;">Total Users</h4>
+            <p>1500</p>
+          </div>
+        </div>
+        <div class="col-lg-2">
+          <div class="total-data">
+            <h4 style="overflow: hidden;">Total Artworks</h4>
+            <p>500</p>
+          </div>
+        </div>
+        <div class="col-lg-2">
+          <div class="total-data">
+            <h4 style="overflow: hidden;">Total Artists</h4>
+            <p>200</p>
+          </div>
+        </div>
+        <div class="col-lg-2">
+          <div class="total-data">
+            <h4 style="overflow: hidden;">Total Pembelian</h4>
+            <p>800</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-column"></div>
+      <div class="content mt-4">
+        <div class="row">
+          <div class="col-xl-8">
+            <div class="card">
+              <div class="card-header container">
+                <div>Data & Status Pembelian</div>
+                <div>
+                  <a href="/admin/pembelian"><button class="btn btn-bp">Detail</button></a>
+                </div>
+              </div>
+              <div class="card-body">
+                <table id="userData" class="table table-striped table-bordered" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th>ID Pembelian</th>
+                      <th>Nama Lengkap</th>
+                      <th>Artwork</th>
+                      <th>Jml</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>PURC210001</td>
+                      <td>Ahmad Abdullah</td>
+                      <td>Pertempuran Diponegoro</td>
+                      <td>2</td>
+                      <td>Approved</td>
+                    </tr>
+                    <tr>
+                      <td>PURC210001</td>
+                      <td>Ahmad Abdullah</td>
+                      <td>Pertempuran Diponegoro</td>
+                      <td>2</td>
+                      <td>Approved</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-4">
+            <!-- Card with Pie Chart -->
+            <div class="card">
+              <div class="card-header container">Pie Chart Data Pembelian</div>
+              <div class="card-body">
+                <div class="pie-chart">
+                  <canvas id="userPieChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="d-flex flex-wrap justify-content-between align-items-center mt-5 py-3 my-4 border-top">
+        <div class="col-md-4 d-flex align-items-center">
+          <span class="text-black-50 mt-1">Copyright © Brush&amp;Palette 2023</span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+    <!-- DataTables JS and dependencies -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+
+    <!-- Chart.js JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      $(document).ready(function () {
+        // Initialize DataTable
+        var table = $('#userData').DataTable({
+          lengthMenu: [5, 10, 20, 30],
+          pageLength: 10,
+          dom: 'Blfrtip',
+          buttons: ['copy', 'excel', 'pdf'],
+          searchPanes: {
+            viewTotal: true,
+            dtOpts: [{ searchPanes: { show: 'top' } }]
+          },
+          select: true,
+          scrollX: true
+        })
+      
+        // Sample data for the pie chart
+        var pieData = {
+          labels: ['Approved', 'Unapproved'],
+          datasets: [
+            {
+              data: [75, 25],
+              backgroundColor: ['#36a2eb', '#ff6384']
+            }
+          ]
+        }
+      
+        // Create the pie chart
+        var ctx = document.getElementById('userPieChart').getContext('2d')
+        var userPieChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: pieData
+        })
+      })
+      
+      // Toggle sidebar on button click
+      $('#toggle-btn').click(function () {
+        $('#sidebar').toggleClass('d-none')
+        $('#content').toggleClass('ml-0')
+        $('#toggle-icon').text($('#toggle-icon').text() === '←' ? '→' : '←')
+      })
+      
+      $('#profile-dropdown-btn').click(function () {
+        if ($('#profile-dropdown-content').css('display') == 'block') {
+          $('#profile-dropdown-content').hide('slow')
+        } else {
+          $('#profile-dropdown-content').show('slow')
+        }
+      })
+      
+      function logout() {
+        $.removeCookie('mytoken', { path: '/' })
+        alert('Signed Out!')
+        window.location.href = '/admin/login'
+      }
+    </script>
+  </body>
+</html>
