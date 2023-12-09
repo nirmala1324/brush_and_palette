@@ -156,7 +156,7 @@ def menu_user():
 
 @app.route('/artist')
 def artists():
-    return render_template('artist.html')
+    return render_template('fans/artist.html')
 
 @app.route('/artist/<artist_id>')
 def artist_detail(artist_id):
