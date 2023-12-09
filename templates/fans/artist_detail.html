@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Home | Brush & Pallet</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+        </script>
+
+    <!-- bootstrap-icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+    <!-- ajax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" />
+
+    <!-- Font Awesome CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+    <!-- Google font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@500&family=Poppins&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightbox2/dist/css/lightbox.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/lightbox2/dist/js/lightbox.min.js"></script>
+
+
+
+    <script>
+        function logout() {
+            $.removeCookie('mytoken')
+            alert('You have been logged out')
+            window.location.href = '/'
+        }
+
+        $(document).ready(function () {
+            lightbox.option({
+                'resizeDuration': 200,
+                'wrapAround': true
+            });
+        });
+    </script>
+
+
+
+    <style>
+        body {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+        }
+
+        /* ============================= CSS NAVBAR  ============================= */
+        .logo-img {
+            margin-left: 100px;
+            width: 250px;
+        }
+
+        .fixed-top {
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .custom-navbar-nav {
+            margin-right: 100px;
+            margin-left: auto;
+        }
+
+        .custom-navbar-nav .nav-item {
+            margin-right: 30px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* ============================= CSS BODY LOGO  ============================= */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-container img {
+            padding-top: 200px;
+            padding-bottom: 200px;
+            width: 300px;
+        }
+
+        /* ============================= CSS CARD ============================= */
+        .card-img-top {
+            border-radius: 50px;
+            padding: 20px;
+            width: 250px;
+            height: 250px;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.7);
+            border: 1px solid black;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-family: 'Poppins', sans-serif;
+            width: 250px;
+            height: 400px;
+            margin-bottom: 20px;
+            border-radius: 50px;
+        }
+
+        .card-body {
+            padding: 25px;
+            margin-top: -15px;
+            padding-bottom: 0;
+            position: relative;
+        }
+
+        .card-body .d-flex {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .card-tile {
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 5px
+        }
+
+        .card-text {
+            margin-top: 30px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Menambahkan hover effect */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: rgba(0, 0, 0, 0.2) 0px 10px 20px 0px;
+        }
+
+
+        .all-artwork {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 30px;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .all-artwork:hover {
+            color: black;
+        }
+
+        .btn-view-artwork a {
+            transition: 0.3s ease-in-out;
+        }
+
+        h5 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+        }
+
+        /* Style untuk artist-info-box */
+        .artist-info-box {
+            background-color: transparent;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            height: 100%;
+        }
+
+        .display-4 {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .lead {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        /* Style untuk artist-image-box */
+        .artist-image-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border-radius: 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .artist-image-box img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0;
+        }
+
+        .artist-image {
+            width: 500px;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+
+        .artist-artwork {
+            border-radius: 30px;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+            font-family: 'Poppins', sans-serif;
+
+        }
+
+
+        /* ============================= CSS FOOTER ============================= */
+        footer {
+            font-family: 'Playfair Display', serif;
+            background-color: black;
+            margin-top: 100px;
+            color: white;
+        }
+
+        footer .nav-link {
+            color: white;
+        }
+
+        .logo-footer {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-footer img {
+            height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo-img" />
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav custom-navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/artwork">Artwork</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Artist
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item"
+                                    href="{{ url_for('artist_detail', artist_id='artist1') }}">Bahaudin</a></li>
+                            <li><a class="dropdown-item"
+                                    href="{{ url_for('artist_detail', artist_id='artist2') }}">Nama</a></li>
+                            <li><a class="dropdown-item"
+                                    href="{{ url_for('artist_detail', artist_id='artist3') }}">Nama</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Article</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo Website">
+    </div>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="artist-info-box " style="color: white;">
+                    <div class="d-flex align-items-center mb-4">
+                        <h1 class="display-4">
+                            {% if artist_id == 'artist1' %}
+                            Bahaudin
+                            {% elif artist_id == 'artist2' %}
+                            Nama Artist 2
+                            {% elif artist_id == 'artist3' %}
+                            Nama Artist 3
+                            {% endif %}
+                        </h1>
+                    </div>
+                    <p class="lead"style="color: white;">
+                        {% if artist_id == 'artist1' %}
+                        Informasi tentang Bahaudin
+                        {% elif artist_id == 'artist2' %}
+                        Informasi tentang Artist 2
+                        {% elif artist_id == 'artist3' %}
+                        Informasi tentang Artist 3
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="artist-image-box">
+                    <img src="{% if artist_id == 'artist1' %}
+                    {{ url_for('static', filename='artist1.jpg') }}
+                {% elif artist_id == 'artist2' %}
+                    {{ url_for('static', filename='artist2.jpg') }}
+                {% elif artist_id == 'artist3' %}
+                    {{ url_for('static', filename='artist3.jpg') }}
+                {% endif %}" class="img-fluid artist-image" alt="Artist Image">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row py-5">
+            {% if artist_id == 'artist1' %}
+            <!-- Karya dari Artist 1 -->
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist1.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist1.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5> 
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist2.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist2.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5> 
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist3.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist3.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5> 
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist4.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist4.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5> <!-- Teks Nama Artist ditengah -->
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% elif artist_id == 'artist2' %}
+            <!-- Karya dari Artist 2 -->
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist1.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist1.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5>
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist2.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist2.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5>
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist3.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist3.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5>
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist4.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist4.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5>
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            {% elif artist_id == 'artist3' %}
+            <!-- Karya dari Artist 3 -->
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist1.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist1.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5>
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist2.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist2.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5>
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist3.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist3.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5>
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <a href="{{ url_for('static', filename='artist4.jpg') }}" data-lightbox="artist-gallery"
+                        data-title="Artwork">
+                        <img src="{{ url_for('static', filename='artist4.jpg') }}" class="card-img-top" alt="..." />
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Nama Artist</h5>
+                        <p class="text-center">Nama Karya</p>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span>Rp 100.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-4 text-center btn-view-artwork">
+                <a href="/artist" class="btn btn-light btn-lg w-100" role="button">back to all artist</a>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="py-3">
+        <div class="container logo-footer">
+            <div class="logo-footer">
+                <img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo Website">
+            </div>
+        </div>
+        <ul class="nav justify-content-center border-bottom pb-5 mb-5">
+
+            <li class="nav-item"><a href="/" class="nav-link px-2">Home</a></li>
+            <li class="nav-item"><a href="/artwork" class="nav-link px-2">Arwork</a></li>
+            <li class="nav-item"><a href="/artist" class="nav-link px-2">Artist</a></li>
+            <li class="nav-item"><a href="#" class="nav-link px-2">About</a></li>
+        </ul>
+        <p class="text-center">©2023 Microsoft All right reserved</p>
+    </footer>
+
+</body>
+
+</html>
