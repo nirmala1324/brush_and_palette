@@ -26,7 +26,6 @@ load_dotenv(dotenv_path)
 
 MONGODB_URI = os.environ.get("MONGODB_URI")
 DB_NAME = os.environ.get("DB_NAME")
-
 SECRET_KEY = os.environ.get("SECRET_KEY")
 TOKEN_KEY = os.environ.get("TOKEN_KEY")
 
