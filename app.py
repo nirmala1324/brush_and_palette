@@ -244,6 +244,32 @@ def save_order():
     db.purchases.insert_one(data_order)
     return jsonify({'message': 'Terima kasih! pembelian berhasil.'}), 200
 
+# ROUTE CHECKOUT DETAIL
+@app.route("/artwork/checkout/detail", methods=["GET", "POST"])
+def checkout_detail():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+        
+        artwork_id = request.args.get("id")
+        artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
+        
+        if artwork:
+            purchases = db.purchases.find({
+                "username": user_info['username'],
+                "artwork_id": artwork_id
+            }).sort([("_id", -1)]).limit(1)
+            
+            return render_template('fans/checkout_detail.html', purchases=purchases, user_info=user_info, artwork=artwork)
+            
+        else:
+            return "Tidak ada data pembelian dengan parameter tersebut"
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+
 # ------------------------------------ ADMIN ---------------------------------------------------
 
 # RENDER PAGES
