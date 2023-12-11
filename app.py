@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 from flask import Flask, json, jsonify, redirect, render_template, request, url_for
 from pymongo import MongoClient
 
+
 app = Flask(__name__)
 
 dotenv_path = join(dirname(__file__), ".env")
@@ -208,6 +209,40 @@ def artwork_review():
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
 
+# ROUTE BUY ARTWORK
+@app.route('/artwork/checkout')
+def artwork_checkout():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+        
+        artwork_id = request.args.get("id")
+        artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
+        
+        if artwork:
+            return render_template('fans/buy_artwork.html', artwork=artwork, user_info=user_info)        
+            
+        else:
+            return "Tidak ada artwork dengan ID tersebut"
+        
+        
+        
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+    
+@app.route('/api/save_order', methods=['POST'])
+def save_order():
+    data_order = request.form.to_dict()
+    formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data_order['timestamp'] = formatted_time
+    
+    if 'unit' in data_order:
+        data_order['unit'] = int(data_order['unit'])
+        
+    db.purchases.insert_one(data_order)
+    return jsonify({'message': 'Terima kasih! pembelian berhasil.'}), 200
 
 # ------------------------------------ ADMIN ---------------------------------------------------
 
