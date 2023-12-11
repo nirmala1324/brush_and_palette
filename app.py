@@ -180,7 +180,7 @@ def artwork_review():
                     "timestamp", -1
                 )
                 return render_template(
-                    "fans/artwork/review.html",
+                    "fans/review.html",
                     artwork=artwork,
                     comments=comments,
                     user_info=user_info,
