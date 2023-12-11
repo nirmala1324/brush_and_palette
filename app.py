@@ -242,6 +242,17 @@ def save_order():
         data_order['unit'] = int(data_order['unit'])
         
     db.purchases.insert_one(data_order)
+    
+    unit = data_order.get('unit', 0)
+    artwork_id = data_order.get('artwork_id')
+    artwork_data = db.artwork.find_one({'_id': ObjectId(artwork_id)})
+    
+    if artwork_data:
+        quantity = artwork_data.get('quantity', 0) - unit
+        print('quantity - artwork_data = ', artwork_data)
+        
+        # Perbarui nilai 'quantity' di koleksi 'artwork'
+        db.artwork.update_one({}, {"$set": {'quantity': quantity}})
     return jsonify({'message': 'Terima kasih! pembelian berhasil.'}), 200
 
 # ROUTE CHECKOUT DETAIL
