@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Checkout | {{artwork.title}}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
     <!-- bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -14,7 +14,7 @@
     </script>
 
     <!-- bootstrap-icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
 
     <!-- jquery -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"
@@ -24,10 +24,329 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
         integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" />
+
+    <!-- Font Awesome CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+    <!-- Google font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@500&family=Poppins&display=swap"
+        rel="stylesheet">
+    <!-- jQuery (diperlukan untuk Bootstrap) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Skrip JavaScript Bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+
+    <style>
+        body {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+        }
+
+        /* ============================= CSS NAVBAR  ============================= */
+        .logo-img {
+            margin-left: 100px;
+            width: 250px;
+        }
+
+        .fixed-top {
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .custom-navbar-nav {
+            margin-right: 100px;
+            margin-left: auto;
+        }
+
+        .custom-navbar-nav .nav-item {
+            margin-right: 30px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* ============================= CSS CARD ============================= */
+
+
+        /* ============================= CSS FOOTER ============================= */
+        footer {
+            font-family: 'Playfair Display', serif;
+            background-color: black;
+            margin-top: 100px;
+            color: white;
+        }
+
+        footer .nav-link {
+            color: white;
+        }
+
+        .logo-footer {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-footer img {
+            height: 100px;
+        }
+
+        .sec-artwork {
+            padding-top: 120px;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            let priceText = $('#price').data('price');
+            // Mengonversi nilai teks menjadi angka
+            let price = parseFloat(priceText);
+            // Ubah nilai angka ke dalam format mata uang yang diinginkan (misalnya: IDR)
+            let formattedPrice = price.toLocaleString('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            });
+
+            $('#price').text(formattedPrice);
+            // Gantikan nilai teks di dalam elemen dengan nilai yang telah diformat
+            $('span strong').text(formattedPrice);
+            $('#quantityInput').on('input', function () {
+                let quantity = $(this).val();
+                let price = $('#price').data('price'); // Mengambil nilai harga dari atribut data
+                let total = quantity * price;
+                $('#totalAmount').text(total.toLocaleString('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }));
+            });
+
+
+            $("#purchaseForm").submit(function (event) {
+                event.preventDefault();
+
+                // Menagmbil value dari id #totalAmount
+                let totalAmountText = $('#totalAmount').text();
+                // dan di atur sebagai value dari id #total
+                $('#total').val(totalAmountText)
+
+                // Menagmbil value dari id #quantityInput
+                let quantity = parseInt($('#quantityInput').val());
+                // dan di atur sebagai value dari id #unit
+                $('#unit').val(quantity);
+
+                // Menagmbil value dari id #price
+                let priceText = $('#price').text();
+                // dan di atur sebagai value dari id #harga
+                $('#harga').val(priceText);
+
+
+
+                // Mengambil data formulir
+                let formData = $(this).serialize();
+                // Mengirim data menggunakan AJAX
+                $.ajax({
+                    type: "POST",
+                    url: "/api/save_order",
+                    data: formData,
+                    success: function (response) {
+                        alert(response.message);
+                        window.location.href =
+                            "{{ url_for('checkout_detail', id=artwork._id, user=user_info.username) }}"
+                    },
+                    error: function (error) {
+                        console.error("Terjadi kesalahan:", error);
+                    }
+                });
+            });
+
+            // Memberikan fungsi untuk tombol Tutup
+            $("#closeBtn").click(function () {
+                window.location.href = "/confirmation_page"; // Arahkan ke halaman konfirmasi
+            });
+        });
+    </script>
 </head>
 
 <body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='fans/logo.png') }}" alt="Logo" class="logo-img" />
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav custom-navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/artwork">Artwork</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/artist">Artist</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Article</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
+
+    <section class="sec-artwork">
+        <div class="container">
+            <div class="card mb-3">
+                <div class="row g-0">
+                    <h1 class="text-center"
+                        style="margin-top: 50px; margin-bottom:50px; font-family: 'Poppins', sans-serif; font-weight: bold; font-size:30px;">
+                        Please fill the form below to continue <i class="bi bi-cart"></i></h1>
+
+                    <!-- IMAGE ARTWORK DAN DATA ARTWORK -->
+                    <div class="col-md-4" style="padding: 20px; font-family: 'Poppins', sans-serif; font-weight: bold;">
+                        <img src="{{ url_for('static', filename=artwork.photo_real) }}" class="img-fluid rounded-start"
+                            alt="...">
+
+                        <div class="row" style="margin-top:20px;">
+                            <div class="col-md-6">
+                                <p id="title" data-title="{{ artwork.title }}">{{ artwork.title }}</p>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <span><strong>{{artwork.price}}</strong></span>
+                                <p id="price" data-price="{{ artwork.price }}" style="display: none;"></p>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:20px;">
+                            <div class="col-md-6">
+                                <p>Stock</p>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <strong>
+                                    <p id="quantity" data-quantity="{{ artwork.quantity }}">{{ artwork.quantity }}</p>
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:20px;">
+                            <div class="col-md-6">
+                                <p>Quantity</p>
+                            </div>
+                            <div class="col-md-6">
+                                <input id="quantityInput" type="number" name="quantity_give"
+                                    class="form-control text-right" value="0" min="1" style="width: 100px;">
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:20px;">
+                            <div class="col-md-6">
+                                <p>Total</p>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <strong>
+                                    <p id="totalAmount" name="total_give">Rp 0</p>
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INPUTAN FORM -->
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <form method="post" id="purchaseForm">
+                                <input type="hidden" name="artwork_id" value="{{ artwork._id }}">
+                                <input type="hidden" name="artwork_title" value="{{ artwork.title}}">
+                                <input type="hidden" id="harga" name="harga" value="{{ artwork.price}}">
+                                <input type="hidden" id="unit" name="unit" value="">
+                                <input type="hidden" id="total" name="total" value="">
+
+                                <div class="mb-3">
+                                    <label for="buyerEmail" class="form-label">Your Email</label>
+                                    <input type="email" class="form-control" id="buyerEmail" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="buyerUsername" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="buyerUsername" name="username"
+                                        value="{{ user_info.username }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="fullNameInput" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="fullNameInput" name="fullname"
+                                        placeholder="Full Name" value="{{ user_info.name }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phoneInput" class="form-label">Phone</label>
+                                    <input type="text" class="form-control" id="phoneInput" name="phone"
+                                        placeholder="Phone" value="{{ user_info.phone }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="countryInput" class="form-label">Country</label>
+                                    <input type="text" class="form-control" id="countryInput" name="country"
+                                        placeholder="Country">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="provinceInput" class="form-label">Province</label>
+                                    <input type="text" class="form-control" id="provinceInput" name="province"
+                                        placeholder="Province">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cityInput" class="form-label">City</label>
+                                    <input type="text" class="form-control" id="cityInput" name="city"
+                                        placeholder="City">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="addressInput" class="form-label">Address</label>
+                                    <input type="text" class="form-control" id="addressInput" name="address"
+                                        placeholder="Address" value="{{ user_info.alamat }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="zipCodeInput" class="form-label">ZIP / Postal Code</label>
+                                    <input type="text" class="form-control" id="zipCodeInput" name="postal"
+                                        placeholder="ZIP / Postal Code">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <footer class="py-3">
+        <div class="container logo-footer">
+            <div class="logo-footer">
+                <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
+            </div>
+        </div>
+        <ul class="nav justify-content-center border-bottom pb-5 mb-5">
+
+            <li class="nav-item"><a href="/" class="nav-link px-2">Home</a></li>
+            <li class="nav-item"><a href="/artwork" class="nav-link px-2">Arwork</a></li>
+            <li class="nav-item"><a href="/artist" class="nav-link px-2">Artist</a></li>
+            <li class="nav-item"><a href="#" class="nav-link px-2">About</a></li>
+        </ul>
+        <p class="text-center">©2023 Microsoft All right reserved</p>
+    </footer>
 </body>
 
 </html>
