@@ -1,24 +1,19 @@
-from pymongo import MongoClient
-from flask import Flask, render_template, jsonify, request, redirect, url_for, json
-import jwt
 import hashlib
-import uuid
-from bson.objectid import ObjectId
-from datetime import (
-    datetime, # representing and manipulating date and time
-    # representing the difference between two dates or times
-    # ( Getting the time difference )
-    timedelta 
-)
-
 import os
-from datetime import datetime, timedelta
+import random
+import string
+import uuid
+from datetime import datetime  # representing and manipulating date and time
+from datetime import (  # representing the difference between two dates or times; ( Getting the time difference )
+    timedelta,
+)
 from os.path import dirname, join
 
 import jwt
+from bson.objectid import ObjectId
 from dotenv import load_dotenv
-import random
-import string
+from flask import Flask, json, jsonify, redirect, render_template, request, url_for
+from pymongo import MongoClient
 
 app = Flask(__name__)
 
@@ -33,6 +28,7 @@ TOKEN_KEY = os.environ.get("TOKEN_KEY")
 
 conn = MongoClient(MONGODB_URI)
 db = conn[DB_NAME]
+
 
 @app.route("/", methods=["GET"])
 def home():
@@ -96,7 +92,7 @@ def sign_in():
     username_receive = request.form["username_give"]
     password_receive = request.form["password_give"]
     pw_hash = hashlib.sha256(password_receive.encode("utf-8")).hexdigest()
-    
+
     result = db.user_login.find_one(
         {
             "username": username_receive,
@@ -108,8 +104,8 @@ def sign_in():
             "id": username_receive,
             "exp": datetime.utcnow() + timedelta(seconds=60 * 60 * 24),
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256").decode('utf-8')
-        
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256").decode("utf-8")
+
         return jsonify(
             {
                 "result": "success",
@@ -123,6 +119,7 @@ def sign_in():
                 "msg": "Mohon pastikan bahwa ID pengguna dan sandi yang Anda masukkan sesuai dengan yang terdaftar.",
             }
         )
+
 
 # ROUTE ARTWORK
 @app.route("/artwork", methods=["GET"])
@@ -143,7 +140,7 @@ def get_artwork():
 
 
 # ROUTE ARTWORK DETAIL
-@app.route('/artwork/detail', methods=["GET"])
+@app.route("/artwork/detail", methods=["GET"])
 def artwork_detail():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
@@ -152,130 +149,170 @@ def artwork_detail():
 
         id = request.args.get("id")
         artwork = db.artwork.find_one({"_id": ObjectId(id)})
-        
+
         if artwork:
-                artwork["_id"] = str(artwork["_id"])
-                return render_template('fans/artwork_detail.html', artwork=artwork, user_info=user_info)
+            artwork["_id"] = str(artwork["_id"])
+            return render_template(
+                "fans/artwork_detail.html", artwork=artwork, user_info=user_info
+            )
         else:
             return "Tidak ada artwork dengan url tersebut"
-        
+
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
+
+
+# ROUTE ARTWORK REVIEW
+@app.route("/artwork/review", methods=["GET", "POST"])
+def artwork_review():
+    token_receive = request.cookies.get(TOKEN_KEY)
+
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+
+        if request.method == "GET":
+            artwork_id = request.args.get("id")
+            artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
+            if artwork:
+                comments = db.comments.find({"artwork_id": artwork_id}).sort(
+                    "timestamp", -1
+                )
+                return render_template(
+                    "fans/artwork/review.html",
+                    artwork=artwork,
+                    comments=comments,
+                    user_info=user_info,
+                )
+            else:
+                return "Tidak ada artwork dengan ID tersebut"
+
+        elif request.method == "POST":
+            current_time = datetime.now()
+            formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+            artwork_id = request.form.get("artwork_id")
+            comment_text = request.form.get("comment_text")
+            db.comments.insert_one(
+                {
+                    "artwork_id": artwork_id,
+                    "comment": comment_text,
+                    "user_id": user_info["_id"],
+                    "username": user_info["username"],
+                    "timestamp": formatted_time,
+                }
+            )
+            return redirect(url_for("artwork_review", id=artwork_id))
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+
 
 # ------------------------------------ ADMIN ---------------------------------------------------
 
 # RENDER PAGES
 
 # LOGIN ADMIN
-@app.route('/admin/login')
+@app.route("/admin/login")
 def admin_login():
-    msg = request.args.get('msg')
-    return render_template('admin/login_admin.html', msg = msg)
+    msg = request.args.get("msg")
+    return render_template("admin/login_admin.html", msg=msg)
 
-@app.route('/admin/user')
+
+@app.route("/admin/user")
 def menu_user():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload = jwt.decode(
-            token_receive,
-            SECRET_KEY,
-            algorithms = ['HS256']
-        )
-        username = payload.get('id') 
-        user_info = db.admin.find_one(
-            {'username': username},
-            {'_id': False}
-        )
-        datas = db.user.find({}, {'_id':False})
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        username = payload.get("id")
+        user_info = db.admin.find_one({"username": username}, {"_id": False})
+        datas = db.user.find({}, {"_id": False})
         user_data = enumerate(datas, start=1)
-        return render_template('admin/menu_user.html', user_info = user_info, user_data = user_data)
+        return render_template(
+            "admin/menu_user.html", user_info=user_info, user_data=user_data
+        )
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for('admin_login'))
-    
+        return redirect(url_for("admin_login"))
 
-@app.route('/artist')
+
+@app.route("/artist")
 def artists():
-    return render_template('fans/artist.html')
+    return render_template("fans/artist.html")
 
-@app.route('/artist/<artist_id>')
+
+@app.route("/artist/<artist_id>")
 def artist_detail(artist_id):
-    artist_data = db.artist_collection.find_one({'_id': artist_id})
-    return render_template('artist_detail.html', artist_id=artist_id, artist_data=artist_data)
-    
-@app.route('/admin/artwork')
+    artist_data = db.artist_collection.find_one({"_id": artist_id})
+    return render_template(
+        "artist_detail.html", artist_id=artist_id, artist_data=artist_data
+    )
+
+
+@app.route("/admin/artwork")
 def menu_artwork():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload = jwt.decode(
-            token_receive,
-            SECRET_KEY,
-            algorithms = ['HS256']
-        )
-        username = payload.get('id') 
-        user_info = db.admin.find_one(
-            {'username': username},
-            {'_id': False}
-        )
-        # Create random ID Artwork 
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        username = payload.get("id")
+        user_info = db.admin.find_one({"username": username}, {"_id": False})
+        # Create random ID Artwork
         artworks = db.artwork.find({})
         """ length = 3
         random_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(length)) """
-        return render_template('admin/menu_artwork.html', user_info = user_info)
+        return render_template("admin/menu_artwork.html", user_info=user_info)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for('admin_login'))
-    
+        return redirect(url_for("admin_login"))
 
-@app.route('/admin')
+
+@app.route("/admin")
 def admin():
     token_receive = request.cookies.get(TOKEN_KEY)
     # decrypting the important variables' value (TOKEN)
     try:
-        payload = jwt.decode( # translating the token
-            token_receive,
-            SECRET_KEY,
-            algorithms = ['HS256']
+        payload = jwt.decode(  # translating the token
+            token_receive, SECRET_KEY, algorithms=["HS256"]
         )
         # get the user info and set them as payload
-        user_info = db.admin.find_one({'username': payload.get('id')})
-        return render_template('admin/dashboard_admin.html', user_info = user_info)
+        user_info = db.admin.find_one({"username": payload.get("id")})
+        return render_template("admin/dashboard_admin.html", user_info=user_info)
     # handle if the token has expired
     except jwt.ExpiredSignatureError:
         msg = "Your token has expired"
         # redirecting client to login endpoint with 'msg' data
-        return redirect(url_for('admin_login', msg = msg))
+        return redirect(url_for("admin_login", msg=msg))
     except jwt.exceptions.DecodeError:
-        msg = 'There was a problem logging you in'
-        return redirect(url_for('admin_login', msg = msg))
-    
+        msg = "There was a problem logging you in"
+        return redirect(url_for("admin_login", msg=msg))
+
 
 # PROCESSES
 
-@app.route('/admin/loggingin', methods=["POST"])
+
+@app.route("/admin/loggingin", methods=["POST"])
 def login_process():
-    
+
     username_receive = request.form["username_give"]
     password_receive = request.form["password_give"]
     hashed_pw = hashlib.sha256(password_receive.encode("utf-8")).hexdigest()
-    
-    result = db.admin.find_one({
-        "username": username_receive,
-        "password": hashed_pw
-    })
-    
+
+    result = db.admin.find_one({"username": username_receive, "password": hashed_pw})
+
     if result:
         payload = {
-            "id" : username_receive,
+            "id": username_receive,
             "exp": datetime.utcnow() + timedelta(seconds=60 * 60 * 24),
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256").decode('utf-8')
-        return jsonify({"result": "success", "token":token})
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256").decode("utf-8")
+        return jsonify({"result": "success", "token": token})
     else:
-        return jsonify({
-            "result": "fail",
-            "msg": "We could not found admin data with that that username/ password combination"
-        })
+        return jsonify(
+            {
+                "result": "fail",
+                "msg": "We could not found admin data with that that username/ password combination",
+            }
+        )
 
 
-if __name__ == '__main__':
-    app.run('0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run("0.0.0.0", port=5000, debug=True)
