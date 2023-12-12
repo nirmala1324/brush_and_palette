@@ -109,69 +109,64 @@
 
     <script>
         $(document).ready(function () {
-            let stock = $('#quantity').data('quantity');
-            let unit = $('#unitInput').val();
-            // Function untuk mengecek jika stock <=0 maka akan disable tombol submit, unit beli
-            // dan menambahkan badge sold out danger pada value stock
             function updateSubmitButtonStatus() {
+                let stock = parseInt($('#quantity').data('quantity'));
                 if (stock <= 0) {
                     $('#quantity').text('Sold Out');
                     $('#quantity').addClass("badge text-bg-danger");
-                    $('#quantity').focus();
                     $('#submitButton').prop('disabled', true);
                     $('#unitInput').prop('disabled', true);
+                    $('#soldOutAlert').show();
                 } else {
                     $('#submitButton').prop('disabled', false);
                     $('#unitInput').prop('disabled', false);
+                    $('#soldOutAlert').hide();
                 }
             }
             updateSubmitButtonStatus();
 
-            // =============================================================================================
-            // Mengambil nilai harga dari atribut 'data-price' pada elemen dengan ID 'price'
-            // mengubahnya menjadi angka, lalu mengonversi nilai tersebut ke format mata uang Rupiah Indonesia
-            // menggunakan toLocaleString(). Selanjutnya, menetapkan teks yang diformat sebagai
-            // harga pada elemen dengan ID 'price' dan juga pada elemen <strong> yang berada di dalam elemen <span>.
-            let priceText = $('#price').data('price');
-            let price = parseFloat(priceText);
-            let formattedPrice = price.toLocaleString('id-ID', {
+            let formatCurrency = (value) => value.toLocaleString('id-ID', {
                 style: 'currency',
                 currency: 'IDR'
             });
-            $('#price').text(formattedPrice);
-            $('span strong').text(formattedPrice);
+            let price = parseFloat($('#price').data('price'));
+            $('#price').text(formatCurrency(price));
+            $('span strong').text(formatCurrency(price));
 
-            // ==================================================================================================
-            // Baris ini menghitung total harga berdasarkan nilai input unit X harga
-            // kemudian menampilkan total dalam format mata uang Rupiah Indonesia
-            // pada elemen dengan ID 'totalAmount' setiap kali nilai input 'unitInput' berubah.
             $('#unitInput').on('input', function () {
                 let unit = $(this).val();
-                let price = $('#price').data('price');
                 let total = unit * price;
-                $('#totalAmount').text(total.toLocaleString('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR'
-                }));
+                $('#totalAmount').text(formatCurrency(total));
             });
-
 
             $("#purchaseForm").submit(function (event) {
                 event.preventDefault();
-                let price = $('#price').text();
-                $('#harga').val(price);
-
                 let unit = parseInt($('#unitInput').val());
-                $('#unit').val(unit);
+                let stock = parseInt($('#quantity').data('quantity'));
 
-                let total = $('#totalAmount').text();
-                $('#total').val(total)
+                if (unit > stock || unit === 0) {
+                    if (unit > stock) {
+                        $('#stockAlert').show();
+                        $('#unitInput').focus();
+                    } else {
+                        $('#stockAlert').hide();
+                    }
 
-                let stock = $('#quantity').data('quantity');
-                if (unit <= 0) {
-                    $('#unitInput').focus();
-                    return
+                    if (unit === 0) {
+                        $('#unitAlert').show();
+                        $('#unitInput').focus();
+                    } else {
+                        $('#unitAlert').hide();
+                    }
+                    return;
+                } else {
+                    $('#stockAlert').hide();
+                    $('#unitAlert').hide();
                 }
+
+                $('#harga').val(formatCurrency(price));
+                $('#unit').val(unit);
+                $('#total').val($('#totalAmount').text());
 
                 let formData = $(this).serialize();
                 $.ajax({
@@ -212,6 +207,10 @@
 </head>
 
 <body>
+    <!-- <div class="alert alert-danger" role="alert" id="errorMessage" style="display: none;">
+        A simple danger alert—check it out!
+    </div> -->
+
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
@@ -246,9 +245,28 @@
         </div>
     </nav>
 
-
     <section class="sec-artwork">
         <div class="container">
+
+            <div class="alert alert-warning alert-dismissible fade show" role="alert" id="stockAlert"
+                style="display: none;">
+                <strong>Stock tidak cukup!</strong> Silahkan beli sesuai stock yang tersedia.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="alert alert-warning alert-dismissible fade show" role="alert" id="unitAlert"
+                style="display: none;">
+                <strong>Unit yang dibeli tidak boleh 0!</strong> Silahkan beli sesuai kebutuhan anda.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="alert alert-warning alert-dismissible fade show" role="alert" id="soldOutAlert"
+                style="display: none;">
+                <strong>Upsss...</strong>Persediaan barang telah habis terjual. Kami sedang bersiap untuk
+                menambah stok lagi!"
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
             <div class="card mb-3">
                 <div class="row g-0">
                     <h1 class="text-center"
@@ -356,6 +374,7 @@
                                         placeholder="ZIP / Postal Code" required>
                                 </div>
                                 <button id="submitButton" type="submit" class="btn btn-primary">Submit</button>
+
                             </form>
                         </div>
                     </div>
