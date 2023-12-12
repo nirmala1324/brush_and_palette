@@ -248,11 +248,11 @@ def save_order():
     artwork_data = db.artwork.find_one({'_id': ObjectId(artwork_id)})
     
     if artwork_data:
-        quantity = artwork_data.get('quantity', 0) - unit
+        stock = artwork_data.get('stock', 0) - unit
         print('quantity - artwork_data = ', artwork_data)
         
         # Perbarui nilai 'quantity' di koleksi 'artwork'
-        db.artwork.update_one({}, {"$set": {'quantity': quantity}})
+        db.artwork.update_one({}, {"$set": {'stock': stock}})
     return jsonify({'message': 'Terima kasih! pembelian berhasil.'}), 200
 
 # ROUTE CHECKOUT DETAIL
