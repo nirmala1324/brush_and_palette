@@ -150,7 +150,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="navbar">
       <button class="btn" id="toggle-btn"><span>☰</span></button>
       <div>
-        <img class="logo" src="/static/logo.png" style="width: 180px;" alt="Brush&Palette" />
+        <img class="logo" src="/static/fans/logo.png" style="width: 180px;" alt="Brush&Palette" />
       </div>
       <div class="ml-auto flex">
         <span class="navbar-text">Welcome, {{ user_info.username }}</span>
@@ -199,8 +199,7 @@
       <h2>Artwork</h2>
       <p>Data Artwork</p>
 
-      <button class="btn btn-bp w-100 mt-3">Tambah Artwork</button>
-
+      <button type="button" class="btn btn-bp w-100 mt-3" data-toggle="modal" data-target="#addArtistModal">Tambah Artwork</button>
       <div class="container" style="margin-top: 40px; margin-bottom: 40px;">
         <div class="card w-100">
           <div class="card-header container">
@@ -221,29 +220,78 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  {% for i, data in datas %}
-                    {% set id = data._id|string %}
-                    {% set photo = data.photo %}
-                    {% set artist = data.artist %}
-                    {% set desc = data.desc %}
-                    {% set stock = data.stock %}
-                    <td>{{ i }}</td>
-                    <td>Les Demoiselles d\'Avignon</td>
+                {% for data in datas %}
+                  {% set id = data.artwork_id %}
+                  {% set title = data.title %}
+                  {% set photo = data.photo_real %}
+                  {% set artist = data.artist %}
+                  {% set price = data.price %}
+                  {% set desc = data.desc %}
+                  {% set qty = data.stock %}
+                  <tr id="{{ id }}">
+                    <td>{{ id }}</td>
+                    <td>{{ title }}</td>
                     <td>
-                      <img src="{{ url_for('static', filename = 'admin/artwork/001.jpg') }}" width="140px" />
+                      <img src="{{ url_for('static', filename = photo) }}" width="140px" />
                     </td>
-                    <td>Pablo Picasso</td>
-                    <td>'Les Demoiselles d\'Avignon adalah sebuah lukisan kubisme terkenal yang diciptakan oleh seniman Spanyol, Pablo Picasso, pada tahun 1907. Lukisan ini menampilkan lima wanita telanjang dengan wajah yang terinspirasi oleh seni primitif dan masker Afrika. Dengan gaya kubisnya yang inovatif, Picasso memecahkan konvensi seni tradisional dan menciptakan salah satu karya paling berpengaruh dalam sejarah seni modern.</td>
-                    <td>300000000</td>
-                    <td>7</td>
+                    <td>{{ artist }}</td>
+                    <td>{{ desc }}</td>
+                    <td>{{ price }}</td>
+                    <td>{{ qty }}</td>
                     <td>
                       <a href="#">edit</a>
                     </td>
-                  {% endfor %}
-                </tr>
+                  </tr>
+                {% endfor %}
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL FORM TAMBAH -->
+      <div class="modal" id="addArtistModal" tabindex="-1" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content p-3 py-4">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Artwork</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+              <!-- Add Artist Form -->
+              <form enctype="multipart/form-data">
+                <div class="form-group">
+                  <label for="artistName">Nama Artist</label>
+                  <select id="artistName" class="form-control">
+                    <option selected disabled>Pilih ...</option>
+                    {% for artst in artists %}
+                      <option>{{ artst.fullname }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="artworkTitle">Title</label>
+                  <input type="text" class="form-control" id="artworkTitle" placeholder="Masukan judul artwork" />
+                </div>
+                <div class="form-group">
+                  <label for="artworkPhoto">Foto</label>
+                  <input type="file" class="form-control-file" id="artworkPhoto" accept="image/*" />
+                </div>
+                <div class="form-group">
+                  <label for="artworkDescription">Deskripsi</label>
+                  <textarea class="form-control" id="artworkDescription" rows="3" placeholder="Masukan deskripsi artwork"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="artworkPrice">Harga</label>
+                  <input type="number" class="form-control" id="artworkPrice" placeholder="Masukan harga artwork" />
+                </div>
+                <div class="form-group">
+                  <label for="artworkStock">Stock</label>
+                  <input type="number" class="form-control" id="artworkStock" placeholder="Masukan jumlah stock artwork" />
+                </div>
+                <button onclick="tambah_artwork()" type="submit" class="btn btn-bp w-100 my-3">Tambah Artist</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -253,12 +301,6 @@
         </div>
       </footer>
     </div>
-
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 
     <!-- DataTables JS and dependencies -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
@@ -275,14 +317,44 @@
           pageLength: 10,
           dom: 'Blfrtip',
           buttons: ['copy', 'excel', 'pdf'],
-          searchPanes: {
-            viewTotal: true,
-            dtOpts: [{ searchPanes: { show: 'top' } }]
-          },
           select: true,
           scrollX: true
         })
       })
+
+      // Tambah Artwork
+      function tambah_artwork(){
+        let artistName = $('#artistName').val();
+        let artworkTitle = $('#artworkTitle').val();
+        let artworkPhoto = $('#artworkPhoto')[0].files[0];
+        let artworkDesc = $('#artworkDescription').val();
+        let artworkPrice = $('#artworkPrice').val();
+        let artworkStock = $('#artworkStock').val();
+        console.log(artistName, artworkTitle, artworkPhoto, artworkDesc, artworkPrice, artworkStock);
+
+        
+        let form_data = new FormData();
+        form_data.append('artistName_give', artistName);
+        form_data.append('artworkTitle_give', artworkTitle)
+        form_data.append('artworkPhoto_give', artworkPhoto);
+        form_data.append('artworkDesc_give', artworkDesc);
+        form_data.append('artworkPrice_give', artworkPrice);
+        form_data.append('artworkStock_give', artworkStock);
+        $.ajax({
+          type: 'POST',
+          url: '/tambah_artwork',
+          data: form_data,
+          cache: false,
+          processData: false,
+          contentType: false,
+          success: function(response){
+            if(response['result'] == 'success'){
+              alert(response['msg']);
+              location.reload(); // Correct method to reload the page
+            }
+          }
+        })
+      }
       
       // Toggle sidebar on button click
       $('#toggle-btn').click(function () {
@@ -300,7 +372,7 @@
       })
       
       function logout() {
-        $.removeCookie('mytoken', { path: '/' })
+        $.removeCookie('admintoken', { path: '/' })
         alert('Signed Out!')
         window.location.href = '/admin/login'
       }
