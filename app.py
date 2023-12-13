@@ -314,15 +314,6 @@ def menu_user():
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
     
-
-@app.route('/artist')
-def artists():
-    return render_template('fans/artist.html')
-
-@app.route('/artist/<artist_id>')
-def artist_detail(artist_id):
-    artist_data = db.artist_collection.find_one({'_id': artist_id})
-    return render_template('artist_detail.html', artist_id=artist_id, artist_data=artist_data)
     
 @app.route('/admin/artwork')
 def menu_artwork():
@@ -608,6 +599,97 @@ def delete_artist():
     db.artist.delete_one({'artist_id':artistID})
     msg = 'Artist'+ artistID +' successfully deleted'
     return redirect(url_for('menu_artist', msg = msg))
+
+@app.route('/artist')
+def artists():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+
+    artists_data = list(db.artist.find({}, {'_id': 1, 'fullname': 1, 'photo': 1}))  
+
+    return render_template('fans/artist.html', artists_data=artists_data)
+
+@app.route('/artist/<artist_id>')
+def artist_detail(artist_id):
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        username = payload["id"]
+        artists_data = list(db.artist.find({}, {'_id': 1, 'fullname': 1}))  
+        artist_data = db.artist.find_one({'_id': ObjectId(artist_id)}, {'_id': 1, 'fullname': 1, 'desc': 1, 'photo': 1})
+        artworks = list(db.artwork.find({'artist_id': ObjectId(artist_id)}, {'photo': 1, 'title': 1, 'price': 1}))
+        if artist_data:
+            return render_template('fans/artist_detail.html', artist_data=artist_data, artworks=artworks, artists_data=artists_data)
+        else:
+            return "Artist data not found"
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for("login"))
+
+    
+    
+
+##profile
+
+@app.route('/fans/profile')
+def fans_profile():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        username = payload["id"]
+        user_info = db.user_login.find_one({"username": username})
+        user_purchases = db.purchases.find({"username": username})  
+
+        return render_template('fans/profile.html', user_login=user_info, user_info=user_info, purchases=user_purchases)
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for("nama_fungsi_lain"))
+
+
+
+@app.route("/update_profile", methods=["POST"])
+def save_img():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        username = payload["id"]
+        name_receive = request.form["name_give"]
+        phone_receive = request.form["phone_give"]
+        alamat_receive = request.form["alamat_give"]
+
+    
+        if "file_give" in request.files:
+            file = request.files["file_give"]
+            if file.filename != "":
+                filename = secure_filename(file.filename)
+                extension = filename.split(".")[-1]
+                file_path = f"{username}.{extension}"
+                file.save(os.path.join("./static/fans/profile", file_path))
+
+                profile_pic_path = file_path
+            else:
+                profile_pic_path = db.user_login.find_one({"username": username}, {"profile_pic_real": 1})["profile_pic_real"]
+
+            
+            db.user_login.update_one(
+                {"username": username},
+                {
+                    "$set": {
+                        "name": name_receive,
+                        "alamat": alamat_receive,  
+                        "phone": phone_receive,
+                        "profile_pic_real": profile_pic_path
+                    }
+                }
+            )
+
+            return jsonify({"result": "success", "msg": "Profile updated!"})
+        else:
+            return jsonify({"result": "failed", "msg": "No file provided!"}), 400
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for("fans/profile"))
+
+
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)
