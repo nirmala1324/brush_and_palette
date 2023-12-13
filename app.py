@@ -109,7 +109,7 @@ def sign_in():
             "id": username_receive,
             "exp": datetime.utcnow() + timedelta(seconds=60 * 60 * 24),
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256").decode('utf-8')
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         
         return jsonify(
             {
@@ -144,7 +144,7 @@ def get_artwork():
 
 
 # ROUTE ARTWORK DETAIL
-@app.route('/artwork/detail', methods=["GET"])
+@app.route("/artwork/detail", methods=["GET"])
 def artwork_detail():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
@@ -153,13 +153,133 @@ def artwork_detail():
 
         id = request.args.get("id")
         artwork = db.artwork.find_one({"_id": ObjectId(id)})
-        
+
         if artwork:
-                artwork["_id"] = str(artwork["_id"])
-                return render_template('fans/artwork_detail.html', artwork=artwork, user_info=user_info)
+            artwork["_id"] = str(artwork["_id"])
+            return render_template(
+                "fans/artwork_detail.html", artwork=artwork, user_info=user_info
+            )
         else:
             return "Tidak ada artwork dengan url tersebut"
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+
+
+# ROUTE ARTWORK REVIEW
+@app.route("/artwork/review", methods=["GET", "POST"])
+def artwork_review():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+
+        if request.method == "GET":
+            artwork_id = request.args.get("id")
+            artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
+            if artwork:
+                comments = db.comments.find({"artwork_id": artwork_id}).sort(
+                    "timestamp", -1
+                )
+                return render_template(
+                    "fans/review.html",
+                    artwork=artwork,
+                    comments=comments,
+                    user_info=user_info,
+                )
+            else:
+                return "Tidak ada artwork dengan ID tersebut"
+
+        elif request.method == "POST":
+            current_time = datetime.now()
+            formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+            artwork_id = request.form.get("artwork_id")
+            comment_text = request.form.get("comment_text")
+            db.comments.insert_one(
+                {
+                    "artwork_id": artwork_id,
+                    "comment": comment_text,
+                    "user_id": user_info["_id"],
+                    "username": user_info["username"],
+                    "timestamp": formatted_time,
+                }
+            )
+            return redirect(url_for("artwork_review", id=artwork_id))
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+
+# ROUTE BUY ARTWORK
+@app.route('/artwork/checkout')
+def artwork_checkout():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
         
+        artwork_id = request.args.get("id")
+        artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
+        
+        if artwork:
+            return render_template('fans/buy_artwork.html', artwork=artwork, user_info=user_info)        
+            
+        else:
+            return "Tidak ada artwork dengan ID tersebut"
+        
+        
+        
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+    
+@app.route('/api/save_order', methods=['POST'])
+def save_order():
+    data_order = request.form.to_dict()
+    formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data_order['timestamp'] = formatted_time
+    
+    if 'unit' in data_order:
+        data_order['unit'] = int(data_order['unit'])
+        
+    db.purchases.insert_one(data_order)
+    
+    unit = data_order.get('unit', 0)
+    artwork_id = data_order.get('artwork_id')
+    artwork_data = db.artwork.find_one({'_id': ObjectId(artwork_id)})
+    
+    if artwork_data:
+        stock = artwork_data.get('stock', 0) - unit
+        print('quantity - artwork_data = ', artwork_data)
+        
+        # Perbarui nilai 'quantity' di koleksi 'artwork'
+        db.artwork.update_one({}, {"$set": {'stock': stock}})
+    return jsonify({'message': 'Terima kasih! pembelian berhasil.'}), 200
+
+# ROUTE CHECKOUT DETAIL
+@app.route("/artwork/checkout/detail", methods=["GET", "POST"])
+def checkout_detail():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+        
+        artwork_id = request.args.get("id")
+        artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
+        
+        if artwork:
+            purchases = db.purchases.find({
+                "username": user_info['username'],
+                "artwork_id": artwork_id
+            }).sort([("_id", -1)]).limit(1)
+            
+            return render_template('fans/checkout_detail.html', purchases=purchases, user_info=user_info, artwork=artwork)
+            
+        else:
+            return "Tidak ada data pembelian dengan parameter tersebut"
+
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
@@ -292,7 +412,7 @@ def login_process():
             "id" : username_receive,
             "exp": datetime.utcnow() + timedelta(seconds=60 * 60 * 24),
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256").decode('utf-8')
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         return jsonify({"result": "success", "token":token})
     else:
         return jsonify({
