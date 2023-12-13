@@ -15,7 +15,6 @@
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-
     <!-- Google Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@500&family=Poppins&display=swap"
@@ -89,11 +88,11 @@
 
         /* Mengatur tinggi gambar kartu */
         .card-img-top {
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
-            height: 350px;
             object-fit: cover;
+            max-width: 100%;
+            max-height: 100%;
         }
+
 
         /* Mengatur tinggi dan lebar kartu sesuai isi konten */
         .card-body {
@@ -191,7 +190,6 @@
 </head>
 
 
-
 <body>
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
@@ -205,25 +203,22 @@
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav custom-navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/artwork">Artwork</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Artist
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item"
-                                    href="{{ url_for('artist_detail', artist_id='artist1') }}">Bahaudin</a></li>
-                            <li><a class="dropdown-item"
-                                    href="{{ url_for('artist_detail', artist_id='artist2') }}">Nama</a></li>
-                            <li><a class="dropdown-item"
-                                    href="{{ url_for('artist_detail', artist_id='artist3') }}">Nama</a></li>
+                            {% for artist in artists_data %}
+                            <li><a class="dropdown-item" href="{{ url_for('artist_detail', artist_id=artist._id) }}">{{
+                                    artist.fullname }}</a></li>
+                            {% endfor %}
                         </ul>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Article</a>
                     </li>
@@ -245,45 +240,28 @@
         <div class="title-section">
             <h1 class="all-artists">Artists</h1>
         </div>
-        <div class="row row-cols-1 row-cols-md-3 g-4 py-5">
-            <!-- Card for Artist 1 -->
-            <div class="col">
-                <div class="card">
-                    <a href="#" onclick="showArtistDetail('artist1')">
-                        <img src="{{ url_for('static', filename='artist1.jpg') }}" class="card-img-top" alt="Artist 1">
-                    </a>
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="#" onclick="showArtistDetail('artist1')"
-                                class="black-link">Bahaudin</a></h5>
-                    </div>
-                </div>
-            </div>
-            <!-- Card for Artist 2 -->
-            <div class="col">
-                <div class="card">
-                    <a href="#" onclick="showArtistDetail('artist2')">
-                        <img src="{{ url_for('static', filename='artist2.jpg') }}" class="card-img-top" alt="Artist 2">
-                    </a>
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="#" onclick="showArtistDetail('artist2')"
-                                class="black-link">Nama</a></h5>
-                    </div>
-                </div>
-            </div>
-            <!-- Card for Artist 3 -->
-            <div class="col">
-                <div class="card">
-                    <a href="#" onclick="showArtistDetail('artist3')">
-                        <img src="{{ url_for('static', filename='artist3.jpg') }}" class="card-img-top" alt="Artist 3">
-                    </a>
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="#" onclick="showArtistDetail('artist3')"
-                                class="black-link">Nama</a></h5>
-                    </div>
-                </div>
-            </div>
 
+        <div class="row row-cols-1 row-cols-md-3 g-4 py-5">
+            {% for artist in artists_data %}
+            <div class="col">
+                <div class="card" style="width: 18rem;">
+                    <a href="{{ url_for('artist_detail', artist_id=artist._id) }}">
+                        <img src="{{ url_for('static', filename='admin/artist/' + artist.photo) }}" class="card-img-top"
+                            alt="{{ artist.fullname }}" style="object-fit: cover; aspect-ratio: 1;">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('artist_detail', artist_id=artist._id) }}" class="black-link">{{
+                                artist.fullname }}</a>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
+
+
+
     </div>
 
     <footer class="py-3">

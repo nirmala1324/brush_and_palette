@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Home | Brush & Pallet</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@500&family=Poppins&display=swap"
+        rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+
+        function logout() {
+            $.removeCookie('mytoken')
+            alert('You have been logged out')
+            window.location.href = '/'
+        }
+        function showArtistDetail(artistId) {
+            window.location.href = "/artist/" + artistId;
+        }
+        $(document).ready(function () {
+            get_posts()
+        });
+
+        function update_profile() {
+            let username = $("#input-username").val();
+            let name = $("#input-name").val();
+            let phone = $("#input-phone").val();
+            let address = $("#input-address").val(); // Mendapatkan nilai alamat dari input form
+
+            let file = $("#input-pic")[0].files[0];
+
+            let form_data = new FormData();
+            form_data.append("file_give", file);
+            form_data.append("name_give", name);
+            form_data.append("username_give", username);
+            form_data.append("phone_give", phone);
+            form_data.append("alamat_give", address); // Menambahkan alamat ke dalam FormData
+
+            $.ajax({
+                type: "POST",
+                url: "/update_profile",
+                data: form_data,
+                enctype: 'multipart/form-data',
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (response) {
+                    if (response.result === "success") {
+                        alert(response.msg);
+                        // Reload halaman setelah update berhasil
+                        location.reload();
+                    } else {
+                        alert("Failed to update profile");
+                    }
+                },
+                error: function (error) {
+                    alert("Error occurred while updating profile");
+                    console.error(error);
+                }
+            });
+        }
+
+        function sign_out() {
+
+            window.location.href = "/login";
+        }
+        function confirmPurchase(purchaseId) {
+            // Ganti status menjadi Sukses
+            document.getElementById('status_' + purchaseId).innerText = 'Sukses';
+
+            // Tampilkan pesan pop-up
+            alert('Konfirmasi sukses!');
+        }
+
+        function changeStatus(button) {
+            // Cek status pada tombol Status
+            var status = button.querySelector('span').innerText;
+
+            // Jika statusnya masih Pending, tampilkan pesan pop-up
+            if (status === 'Pending') {
+                alert('Status masih Pending');
+            }
+        }
+
+        // Fungsi untuk menampilkan modal komentar
+        function showCommentModal() {
+            $('#modal-comment').modal('show');
+        }
+
+        // Fungsi untuk menyimpan komentar
+        function saveComment() {
+            // Dapatkan nilai komentar dan rating dari form
+            var comment = $('#comment').val();
+            var rating = $('#rating').val();
+
+            // Lakukan sesuatu dengan komentar dan rating yang disimpan
+            // Misalnya, kirim ke backend atau lakukan operasi lainnya
+
+            // Setelah menyimpan, tutup modal
+            $('#modal-comment').modal('hide');
+        }
+
+        // Fungsi untuk mengonfirmasi pembelian dengan menampilkan modal komentar
+        function confirmPurchase(purchaseId) {
+            // Ganti status menjadi Sukses
+            document.getElementById('status_' + purchaseId).innerText = 'Sukses';
+
+            // Tampilkan pesan pop-up
+            alert('Konfirmasi sukses!');
+
+            // Tampilkan modal komentar
+            showCommentModal();
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const stars = document.querySelectorAll('.star');
+
+            stars.forEach(function (star) {
+                star.addEventListener('click', setRating);
+            });
+
+            function setRating(e) {
+                let clickedStar = e.target;
+                let rating = clickedStar.dataset.rating;
+                alert('Anda memberikan rating: ' + rating);
+            }
+        });
+
+    </script>
+    <style>
+        body {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+        }
+
+        /* ============================= CSS NAVBAR  ============================= */
+        .logo-img {
+            margin-left: 100px;
+            width: 250px;
+        }
+
+        .fixed-top {
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .custom-navbar-nav {
+            margin-right: 100px;
+            margin-left: auto;
+        }
+
+        .custom-navbar-nav .nav-item {
+            margin-right: 30px;
+            font-family: 'Playfair Display', serif;
+
+        }
+
+        .custom-heading {
+            font-family: 'Whisper', cursive;
+            color: white;
+            text-align: center;
+        }
+
+        /* ============================= CSS BODY LOGO  ============================= */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-container img {
+            padding-top: 200px;
+            padding-bottom: 200px;
+            width: 300px;
+        }
+
+
+        h5 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+        }
+
+        /*profile*/
+        .hero {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh(100vh - 200px);
+        }
+
+        .hero-body {
+            text-align: center;
+        }
+
+        .media-left img.is-rounded {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+        }
+
+        /* ... */
+        .profile-details {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .profile-details-text {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .profile-details-text strong {
+            display: block;
+            color: white;
+        }
+
+        /* ============================= CSS FOOTER ============================= */
+        footer {
+            font-family: 'Playfair Display', serif;
+            background-color: black;
+            margin-top: 100px;
+            color: white;
+        }
+
+        footer .nav-link {
+            color: white;
+        }
+
+        .logo-footer {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-footer img {
+            height: 100px;
+        }
+
+        /* Mengubah warna texs link */
+        .black-link {
+            color: black;
+            text-decoration: none;
+            font-family: 'Arial', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .black-link:hover {
+            color: gray;
+        }
+
+        /* CSS untuk elemen menu pop-up */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            overflow: auto;
+        }
+
+        .modal-content {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 5px;
+            max-width: 600px;
+        }
+
+        .input,
+        .textarea {
+            margin-bottom: 10px;
+            width: calc(100% - 20px);
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            color: #333;
+            outline: 2px solid #fff;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 40px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 4px;
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+            color: white;
+        }
+
+        .is-outlined {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+        }
+
+        .is-outlined:hover {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+            color: white;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            color: #fff;
+        }
+
+        /* CSS untuk log pembelian */
+        .purchase-log {
+            margin-top: 50px;
+            text-align: center;
+
+        }
+
+        .purchase-card {
+            width: 50%;
+            /* Atur lebar kartu menjadi 50% dari lebar container */
+            padding: 10px;
+            /* Mengurangi padding di dalam kartu */
+            background-color: transparent;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 10px auto;
+            /* Mengatur margin atas dan bawah, serta secara otomatis akan memusatkan kartu */
+            border: 2px solid #fff;
+            color: white;
+            font-size: 14px;
+            /* Mengurangi ukuran font teks pada kartu */
+        }
+
+        .purchase-card h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 40px;
+
+        }
+
+        .purchase-card h5 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 10px;
+
+        }
+
+        .purchase-card p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-align: left;
+
+        }
+
+        /* Tombol konfirmasi */
+        .btn.btn-success {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 10px 20px;
+            /* Atur padding sesuai kebutuhan Anda */
+            margin-right: 10px;
+            /* Tambahkan margin kanan */
+            margin-bottom: 10px;
+            /* Tambahkan margin bawah */
+        }
+
+        .btn.btn-success:hover {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+            color: white;
+        }
+
+        /* Status */
+        .btn.btn-primary {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 10px 20px;
+            /* Atur padding sesuai kebutuhan Anda */
+            margin-right: 10px;
+            /* Tambahkan margin kanan */
+            margin-bottom: 10px;
+            /* Tambahkan margin bawah */
+        }
+
+        .btn.btn-primary:hover {
+            background: linear-gradient(to right, #ad5389, #3c1053);
+            color: white;
+        }
+
+        .purchase-card h3 {
+            margin-bottom: 40px;
+        }
+
+        .rating {
+            unicode-bidi: bidi-override;
+            direction: rtl;
+        }
+
+        .rating span.star {
+            font-size: 30px;
+            cursor: pointer;
+            color: #ccc;
+        }
+
+        .rating span.star:hover,
+        .rating span.star:hover~span.star {
+            color: #ffcc00;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='fans/logo.png') }}" alt="Logo" class="logo-img" />
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav custom-navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/artwork">Artwork</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Artist
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            {% for artist in artists_data %}
+                            <li><a class="dropdown-item" href="{{ url_for('artist_detail', artist_id=artist._id) }}">{{
+                                    artist.fullname }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Article</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
+    </div>
+
+    <div class="container">
+        <h2 class="custom-heading">{{ user_login.name }}</h2>
+    </div>
+
+    <section class="hero is-white">
+        <div class="hero-body">
+            <article class="media profile-details">
+                <figure class="media-left" style="align-self: center">
+                    <img class="is-rounded"
+                        src="{{ url_for('static', filename='fans/profile/' + user_login.profile_pic_real) }}" />
+                </figure>
+                <div class="media-content profile-details-text">
+
+                    <strong>@{{ user_info.username }}</strong>
+
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <div class="d-flex justify-content-center mt-3">
+        <a class="button is-sparta" aria-label="edit" data-bs-toggle="modal" data-bs-target="#modal-edit">
+            Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
+                    aria-hidden="true"></i></span>
+        </a>
+        <a class="button is-sparta is-outlined ms-2" aria-label="logout" onclick="sign_out()">
+            Sign Out&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-sign-out"
+                    aria-hidden="true"></i></span>
+        </a>
+    </div>
+
+    <div class="modal" id="modal-edit">
+        <div class="modal-background" onclick='$("#modal-edit").removeClass("is-active")'></div>
+        <div class="modal-content">
+            <div class="box">
+                <article class="media">
+                    <div class="media-content">
+                        <form id="profile-form" enctype="multipart/form-data">
+                            <div class="field">
+                                <label class="label" for="input-username">Username</label>
+                                <p class="control">
+                                    <input id="input-username" class="input" placeholder="Your username"
+                                        value="{{ user_login.username }}" />
+                                </p>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="input-name">Name</label>
+                                <p class="control">
+                                    <input id="input-name" class="input" placeholder="Your name"
+                                        value="{{ user_login.name }}" />
+                                </p>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="input-pic">Profile Picture</label>
+                                <div class="control is-expanded">
+                                    <div class="file has-name">
+                                        <label class="file-label" style="width: 100%">
+                                            <input id="input-pic" class="file-input" type="file" name="resume" />
+                                            <span class="file-cta">
+                                                <span class="file-icon"><i class="fa fa-upload"></i></span>
+                                                <span class="file-label">Select a file</span>
+                                            </span>
+                                            <span id="file-name" class="file-name"
+                                                style="width: 100%; max-width: 100%">{{ user_login.profile_pic_real
+                                                }}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="input-phone">Phone</label>
+                                <p class="control">
+                                    <input id="input-phone" class="input" placeholder="Your phone number"
+                                        value="{{ user_login.phone }}" />
+                                </p>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="input-address">Address</label>
+                                <p class="control">
+                                    <textarea id="input-address" class="textarea"
+                                        placeholder="Your address">{{ user_login.alamat }}</textarea>
+                                </p>
+                            </div>
+
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button class="button is-link" onclick="update_profile()">Update</button>
+                                    <button class="button is-danger"
+                                        onclick='$("#modal-edit").removeClass("is-active")'>Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Log Pembelian -->
+    <div class="purchase-log">
+        {% for purchase in purchases %}
+        {% if purchase.user_id == user_login.id %}
+        <div class="purchase-card">
+            <h3>Log Pembelian</h3>
+            <p>Tanggal: {{ purchase.timestamp }}</p>
+            <p>Nama: {{ purchase.fullname }}</p>
+            <p>Produk: {{ purchase.artwork_title }}</p>
+            <p>Total Harga: {{ purchase.total }}</p>
+            <button class="btn btn-primary" onclick="changeStatus(this)">Status: <span id="status_{{ purchase._id }}">{{
+                    purchase.status }}</span></button>
+            <button class="btn btn-success" onclick="confirmPurchase('{{ purchase._id }}')">Konfirmasi</button>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+
+    <!-- Modal Komentar -->
+    <div class="modal" id="modal-comment">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambahkan Komentar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <form id="comment-form">
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Komentar:</label>
+                            <textarea class="form-control" id="comment" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating:</label>
+                            <div class="rating">
+                                <span class="star" data-rating="1">&#9733;</span>
+                                <span class="star" data-rating="2">&#9733;</span>
+                                <span class="star" data-rating="3">&#9733;</span>
+                                <span class="star" data-rating="4">&#9733;</span>
+                                <span class="star" data-rating="5">&#9733;</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="py-3">
+        <div class="container logo-footer">
+            <div class="logo-footer">
+                <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
+            </div>
+        </div>
+        <ul class="nav justify-content-center border-bottom pb-5 mb-5">
+            <li class="nav-item"><a href="/" class="nav-link px-2">Home</a></li>
+            <li class="nav-item"><a href="/artwork" class="nav-link px-2">Artwork</a></li>
+            <li class="nav-item"><a href="/artist" class="nav-link px-2">Artists</a></li>
+            <li class="nav-item"><a href="#" class="nav-link px-2">About</a></li>
+        </ul>
+        <p class="text-center">©2023 Microsoft All right reserved</p>
+    </footer>
+
+
+</body>
+
+</html>
