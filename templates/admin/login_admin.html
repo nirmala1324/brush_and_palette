@@ -37,7 +37,7 @@
           },
           success: function (response) {
             if (response['result'] === 'success') {
-              $.cookie('mytoken', response['token'], { path: '/' })
+              $.cookie('admintoken', response['token'], { path: '/' })
               window.location.replace('/admin')
             } else {
               alert(response['msg'])
@@ -88,7 +88,7 @@
     <div>
       <main>
         <div>
-          <img class="logo" src="/static/logo.png" style="width: 300px;" alt="Brush&Palette" />
+          <img class="logo" src="/static/fans/logo.png" style="width: 300px;" alt="Brush&Palette" />
         </div>
         <div class="container mt-5" style="height: 100vh; display: flex;
         align-items: center;

@@ -3,18 +3,16 @@ import os
 import random
 import string
 import uuid
-from datetime import datetime  # representing and manipulating date and time
 from datetime import (  # representing the difference between two dates or times; ( Getting the time difference )
-    timedelta,
+    timedelta, datetime
 )
+
+from werkzeug.utils import secure_filename
 from os.path import dirname, join
 
 import jwt
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
-from flask import Flask, json, jsonify, redirect, render_template, request, url_for
-from pymongo import MongoClient
-
 
 app = Flask(__name__)
 
@@ -23,9 +21,9 @@ load_dotenv(dotenv_path)
 
 MONGODB_URI = os.environ.get("MONGODB_URI")
 DB_NAME = os.environ.get("DB_NAME")
-
 SECRET_KEY = os.environ.get("SECRET_KEY")
-TOKEN_KEY = os.environ.get("TOKEN_KEY")
+TOKEN_KEY_ADMIN = os.environ.get("TOKEN_KEY_ADMIN")
+TOKEN_KEY_FANS = os.environ.get("TOKEN_KEY_FANS")
 
 conn = MongoClient(MONGODB_URI)
 db = conn[DB_NAME]
@@ -33,7 +31,7 @@ db = conn[DB_NAME]
 
 @app.route("/", methods=["GET"])
 def home():
-    token_receive = request.cookies.get(TOKEN_KEY)
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
@@ -125,7 +123,7 @@ def sign_in():
 # ROUTE ARTWORK
 @app.route("/artwork", methods=["GET"])
 def get_artwork():
-    token_receive = request.cookies.get(TOKEN_KEY)
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
@@ -143,7 +141,7 @@ def get_artwork():
 # ROUTE ARTWORK DETAIL
 @app.route("/artwork/detail", methods=["GET"])
 def artwork_detail():
-    token_receive = request.cookies.get(TOKEN_KEY)
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
@@ -294,7 +292,7 @@ def admin_login():
 
 @app.route("/admin/user")
 def menu_user():
-    token_receive = request.cookies.get(TOKEN_KEY)
+    token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         username = payload.get("id")
@@ -323,23 +321,26 @@ def artist_detail(artist_id):
 
 @app.route("/admin/artwork")
 def menu_artwork():
-    token_receive = request.cookies.get(TOKEN_KEY)
+    token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         username = payload.get("id")
         user_info = db.admin.find_one({"username": username}, {"_id": False})
         # Create random ID Artwork
         artworks = db.artwork.find({})
+        artists = db.artist.find({})
         """ length = 3
         random_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(length)) """
-        return render_template("admin/menu_artwork.html", user_info=user_info)
+
+        return render_template('admin/menu_artwork.html', user_info = user_info, datas = artworks, artists = artists)
+
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("admin_login"))
 
 
 @app.route("/admin")
 def admin():
-    token_receive = request.cookies.get(TOKEN_KEY)
+    token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
     # decrypting the important variables' value (TOKEN)
     try:
         payload = jwt.decode(  # translating the token
@@ -385,6 +386,56 @@ def login_process():
             }
         )
 
+def generate_random_id(length=4):
+    random_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
+    return random_id
+
+# TAMBAH ARTWORK
+@app.route('/tambah_artwork', methods = ['POST'])
+def tambah_artwork():
+    # the user needs to logged in first -> having token
+    token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
+    # decrypt token
+    try: 
+        payload = jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        # Retrieve data given from client
+        artistName_receive = request.form('artistName_give')
+        artworkTitle_receive = request.form('artworkTitle_give')
+        artworkDesc_receive = request.form('artworkDesc_give')
+        artworkPrice_receive = request.form('artworkPrice_give')
+        artworkStock_receive = request.form('artworkName_give')
+        # Randomize ID for Artwork
+        artworkId = "AW_" + generate_random_id()
+        # Insert data inside new_doc
+        new_doc = {
+            'artwork_id': artworkId,
+            'title': artworkTitle_receive,
+            'artist': artistName_receive,
+            'desc': artworkDesc_receive,
+            'price': artworkPrice_receive,
+            'stock': artworkStock_receive,
+        }
+        # Get the photo data
+        if 'artworkPhoto_give' in request.files:
+            file = request.files.get('artworkPhoto_give')
+            filename = secure_filename(file.filename)
+            # extract extension file
+            extension = filename.split('.')[-1] # get value split first from the back(?)
+            file_path = f'admin/{artworkId}.{extension}'
+            file.save('./static/' + file_path)
+            new_doc['photo'] = filename
+            new_doc['photo_real'] = file_path
+        return jsonify({
+            'result': 'success',
+            'msg': 'Your profile has been updated!'
+        
+        })
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for('home'))
 
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5000, debug=True)
