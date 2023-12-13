@@ -221,9 +221,31 @@ def menu_artwork():
         # Create random ID Artwork 
         artworks = db.artwork.find({})
         artists = db.artist.find({})
+        msg = request.args.get('msg') 
         """ length = 3
         random_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(length)) """
-        return render_template('admin/menu_artwork.html', user_info = user_info, datas = artworks, artists = artists)
+        return render_template('admin/menu_artwork.html', user_info = user_info, datas = artworks, artists = artists, msg = msg)
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for('admin_login'))
+    
+@app.route('/admin/artist')
+def menu_artist():
+    token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
+    try:
+        payload = jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms = ['HS256']
+        )
+        username = payload.get('id') 
+        user_info = db.admin.find_one(
+            {'username': username},
+            {'_id': False}
+        )
+        # Create random ID Artwork 
+        artist = db.artist.find({})
+        msg = request.args.get('msg') 
+        return render_template('admin/menu_artist.html', user_info = user_info, datas = artist, msg = msg)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
     
@@ -283,11 +305,9 @@ def generate_random_id(length=4):
     return random_id
 
 # TAMBAH ARTWORK
-@app.route('/tambah_artwork', methods = ['POST'])
+@app.route('/tambah_artwork', methods=["POST"])
 def tambah_artwork():
-    # the user needs to logged in first -> having token
     token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
-    # decrypt token
     try: 
         payload = jwt.decode(
             token_receive,
@@ -295,18 +315,19 @@ def tambah_artwork():
             algorithms=['HS256']
         )
         # Retrieve data given from client
-        artistName_receive = request.form('artistName_give')
-        artworkTitle_receive = request.form('artworkTitle_give')
-        artworkDesc_receive = request.form('artworkDesc_give')
-        artworkPrice_receive = request.form('artworkPrice_give')
-        artworkStock_receive = request.form('artworkName_give')
+        artistName_receive = request.form.get('artistName_give')
+        artist = str(artistName_receive)
+        artworkTitle_receive = request.form.get('artworkTitle_give')
+        artworkDesc_receive = request.form.get('artworkDesc_give')
+        artworkPrice_receive = int(request.form.get('artworkPrice_give'))
+        artworkStock_receive = int(request.form.get('artworkStock_give'))
         # Randomize ID for Artwork
         artworkId = "AW_" + generate_random_id()
         # Insert data inside new_doc
         new_doc = {
             'artwork_id': artworkId,
             'title': artworkTitle_receive,
-            'artist': artistName_receive,
+            'artist': artist,
             'desc': artworkDesc_receive,
             'price': artworkPrice_receive,
             'stock': artworkStock_receive,
@@ -317,17 +338,156 @@ def tambah_artwork():
             filename = secure_filename(file.filename)
             # extract extension file
             extension = filename.split('.')[-1] # get value split first from the back(?)
-            file_path = f'admin/{artworkId}.{extension}'
+            file_path = f'admin/artwork/{artworkId}.{extension}'
             file.save('./static/' + file_path)
             new_doc['photo'] = filename
             new_doc['photo_real'] = file_path
+        db.artwork.insert_one(new_doc)
         return jsonify({
             'result': 'success',
-            'msg': 'Your profile has been updated!'
-        
+            'msg': 'An artwork (' + artworkTitle_receive + ') successfully added!'
         })
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for('home'))
+        msg = 'You need to log in'
+        return redirect(url_for('admin_login', msg = msg))
+    
+# EDIT ARTWORK
+@app.route('/admin/artwork/edit', methods = ['POST'])
+def edit_artwork():
+    artID_receive = request.form['artworkID']
+    artTitle_receive = request.form['editArtTitle']
+    artDesc_receive = request.form['editArtDesc']
+    artPrice_receive = int(request.form['editArtPrice'])
+    artStock_receive = int(request.form['editArtStock'])
+    artPrevPhoto_receive = request.form['artworkPhoto']
+    artNewPhoto_receive = request.files['editArtPhoto']
+    prev_file_path = './static/' + artPrevPhoto_receive
+    # creating document
+    new_doc = {
+        'title': artTitle_receive,
+        'desc': artDesc_receive,
+        'price': artPrice_receive,
+        'stock': artStock_receive
+    }
+    if artNewPhoto_receive:
+        if os.path.exists(prev_file_path):
+            os.remove('./static/' + artPrevPhoto_receive)
+        file = artNewPhoto_receive
+        filename = secure_filename(file.filename)
+        # extract extension file
+        extension = filename.split('.')[-1] # get value split first from the back(?)
+        file_path = f'admin/artwork/{artID_receive}.{extension}'
+        file.save('./static/' + file_path)
+        new_doc['photo'] = filename
+        new_doc['photo_real'] = file_path
+    db.artwork.update_one(
+        {'artwork_id' : artID_receive},
+        {'$set': new_doc} # let user know how to do update
+    )
+    msg = 'Artwork '+ artID_receive +' successfully updated'
+    return redirect(url_for('menu_artwork', msg = msg))
+
+@app.route('/admin/artwork/delete', methods = ['POST'])
+def delete_artwork():
+    artworkID = request.form['idDelete']
+    db.artwork.delete_one({'artwork_id':artworkID})
+    msg = 'Artwork '+ artworkID +' successfully deleted'
+    return redirect(url_for('menu_artwork', msg = msg))
+
+# TAMBAH ARTWORK
+@app.route('/tambah_artist', methods=["POST"])
+def tambah_artist():
+    token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
+    try: 
+        payload = jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        # Retrieve data given from client
+        artistFullname_receive = request.form.get('artistFullname_give')
+        artistDesc_receive = request.form.get('artistDesc_give')
+        artistEmail_receive = request.form.get('artistEmail_give')
+        artistAcc_receive = request.form.get('artistAcc_give')
+        artistBank_receive = request.form.get('artistBank_give')
+        bankAccount = artistAcc_receive + '(' + artistBank_receive + ')'
+        # Randomize ID for Artwork
+        artistId = "A_" + generate_random_id()
+        # Insert data inside new_doc
+        new_doc = {
+            'artist_id': artistId,
+            'fullname': artistFullname_receive,
+            'desc': artistDesc_receive,
+            'email': artistEmail_receive,
+            'bank': bankAccount,
+        }
+        # Get the photo data
+        if 'artistPhoto_give' in request.files:
+            file = request.files.get('artistPhoto_give')
+            filename = secure_filename(file.filename)
+            # extract extension file
+            extension = filename.split('.')[-1] # get value split first from the back(?)
+            file_path = f'admin/artist/{artistId}.{extension}'
+            file.save('./static/' + file_path)
+            new_doc['photo'] = filename
+            new_doc['photo_real'] = file_path
+        db.artist.insert_one(new_doc)
+        return jsonify({
+            'result': 'success',
+            'msg': 'An artist (' + artistFullname_receive + ') successfully added!'
+        })
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = 'You need to log in'
+        return redirect(url_for('admin_login', msg = msg))
+
+# EDIT ARTIST
+@app.route('/admin/artist/edit', methods = ['POST'])
+def edit_artist():
+    artistID_receive = request.form['artistID']
+    artistFullname_receive = request.form['editArtistFullname']
+    artistDesc_receive = request.form['editArtistDesc']
+    artistEmail_receive = request.form['editArtistEmail']
+    artistAcc_receive = request.form['editArtistAcc']
+    artistBank_receive = request.form['editArtistBank']
+    artistBank = artistAcc_receive + ' ('+ artistBank_receive +')'
+    artistPrevPhoto_receive = request.form['artistPhoto']
+    artistNewPhoto_receive = request.files['editArtistPhoto']
+    prev_file_path = './static/' + artistPrevPhoto_receive
+    # creating document
+    new_doc = {
+        'fullname': artistFullname_receive,
+        'desc': artistDesc_receive,
+        'email': artistEmail_receive,
+        'bank': artistBank
+    }
+    if artistBank_receive:
+        artistBank = artistAcc_receive + ' ('+ artistBank_receive +')'
+        new_doc['bank'] = artistBank
+
+    if artistNewPhoto_receive:
+        if os.path.exists(prev_file_path):
+            os.remove('./static/' + artistPrevPhoto_receive)
+        file = artistNewPhoto_receive
+        filename = secure_filename(file.filename)
+        # extract extension file
+        extension = filename.split('.')[-1] # get value split first from the back(?)
+        file_path = f'admin/artwork/{artistID_receive}.{extension}'
+        file.save('./static/' + file_path)
+        new_doc['photo'] = filename
+        new_doc['photo_real'] = file_path
+    db.artist.update_one(
+        {'artist_id' : artistID_receive},
+        {'$set': new_doc} # let user know how to do update
+    )
+    msg = 'Artwork '+ artistID_receive +' successfully updated'
+    return redirect(url_for('menu_artwork', msg = msg))
+
+@app.route('/admin/artist/delete', methods = ['POST'])
+def delete_artist():
+    artistID = request.form['idDelete']
+    db.artist.delete_one({'artist_id':artistID})
+    msg = 'Artist'+ artistID +' successfully deleted'
+    return redirect(url_for('menu_artist', msg = msg))
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)

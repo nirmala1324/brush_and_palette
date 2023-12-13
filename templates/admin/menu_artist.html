@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Brush&Palette | Menu Artwork</title>
+    <title>Brush&Palette | Menu Artist</title>
 
     <!-- Bulma CSS -->
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" /> -->
@@ -183,10 +183,10 @@
           <a class="nav-link" href="/admin/user"><i class="fas fa-users"></i> User Data</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="/admin/artwork"><i class="fas fa-image"></i>&nbsp;&nbsp;&nbsp;Artwork</a>
+          <a class="nav-link " href="/admin/artwork"><i class="fas fa-image"></i>&nbsp;&nbsp;&nbsp;Artwork</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/admin/artist"><i class="fas fa-palette"></i>&nbsp;&nbsp;&nbsp;Artist</a>
+          <a class="nav-link active" href="/admin/artist"><i class="fas fa-palette"></i>&nbsp;&nbsp;&nbsp;Artist</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/admin/pembelian"><i class="fas fa-shopping-cart"></i>&nbsp;&nbsp;&nbsp;Pembelian</a>
@@ -196,50 +196,47 @@
 
     <div id="content" class="mt-5">
       <!-- Content goes here -->
-      <h2>Artwork</h2>
-      <p>Data Artwork</p>
+      <h2>Artist</h2>
+      <p>Data Artist</p>
 
-      <button type="button" class="btn btn-bp w-100 mt-3" data-toggle="modal" data-target="#addArtworkModal">Tambah Artwork</button>
+      <button type="button" class="btn btn-bp w-100 mt-3" data-toggle="modal" data-target="#addArtistModal">Tambah Artist</button>
       <div class="container" style="margin-top: 40px; margin-bottom: 40px;">
         <div class="card w-100">
           <div class="card-header container">
-            <div>Record Data Artwork</div>
+            <div>Record Data Artist</div>
           </div>
           <div class="card-body">
             <table id="userData" class="table table-striped table-bordered" style="width:100%">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Judul Artwork</th>
-                  <th>Product</th>
-                  <th>Artist</th>
+                  <th>Photo</th>
+                  <th>Nama Artist</th>
                   <th>Deskripsi</th>
-                  <th>Price</th>
-                  <th>Stock</th>
+                  <th>E-mail</th>
+                  <th>No. Rek</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {% for data in datas %}
-                  {% set id = data.artwork_id %}
-                  {% set title = data.title %}
+                  {% set id = data.artist_id %}
+                  {% set fullname = data.fullname %}
                   {% set prev_photo = data.photo %}
                   {% set photo = data.photo_real %}
-                  {% set artist = data.artist %}
-                  {% set price = data.price %}
                   {% set desc = data.desc %}
-                  {% set qty = data.stock %}
-                  {% set row_array = [id, title, photo, artist, price, desc, qty] %}
+                  {% set email = data.email %}
+                  {% set bankAcc = data.bank %}
+                  {% set bank = bankAcc.split("(")[0] %}
                   <tr id="{{ id }}">
                     <td>{{ id }}</td>
-                    <td>{{ title }}</td>
                     <td>
                       <img src="{{ url_for('static', filename = photo) }}" width="140px" />
                     </td>
-                    <td>{{ artist }}</td>
+                    <td>{{ fullname }}</td>
                     <td>{{ desc }}</td>
-                    <td style="text-align: center;">{{ price }}</td>
-                    <td style="text-align: center;">{{ qty }}</td>
+                    <td>{{ email }}</td>
+                    <td>{{ bankAcc }}</td>
                     <td class="flex-column">
                       <div class="d-flex">
                         <button class="btn btn-primary mr-2" data-toggle="modal" data-target="#myModal{{ id }}">Edit</button>
@@ -253,40 +250,46 @@
                     <div class="modal-dialog" role="document">
                       <div class="modal-content p-3">
                         <div class="modal-header">
-                          <h5 class="modal-title" id="myModalLabel">Edit Artwork <span class="badge btn-bp ml-2">{{ id }}</span></h5>
+                          <h5 class="modal-title" id="myModalLabel">Edit Artist <span class="badge btn-bp ml-2">{{ id }}</span></h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
 
                         <div class="modal-body">
-                          <form action="/admin/artwork/edit" method="post" enctype="multipart/form-data">
+                          <form action="/admin/artist/edit" method="post" enctype="multipart/form-data">
                             <div class="form-group">
-                              <label for="artistName">Nama Artist</label>
-                              <input type="text" class="form-control" name="editArtsName" disabled placeholder="Masukan nama artist" value="{{ artist }}" />
-                              <input hidden type="text" name="artworkID" value="{{ id }}" />
-                              <input hidden type="text" name="artworkPhoto" value="{{ photo }}" />
+                              <label for="editArtistFullname">Nama Lengkap</label>
+                              <input type="text" class="form-control" name="editArtistFullname" placeholder="Masukan nama artist" value="{{ fullname }}" />
+                              <input hidden type="text" name="artistID" value="{{ id }}" />
+                              <input hidden type="text" name="artistPhoto" value="{{ photo }}" />
                             </div>
                             <div class="form-group">
-                              <label for="editArtTitle">Title</label>
-                              <input type="text" class="form-control" name="editArtTitle" placeholder="Masukan judul artwork" value="{{ title }}" />
-                            </div>
-                            <div class="form-group">
-                              <label for="editArtPhoto">Foto</label>
+                              <label for="editArtistPhoto">Foto</label>
                               <div style="display: flex; align-items: center;">
                                 <img style="width: 40%; " class="rounded" src="{{ url_for('static', filename = photo) }}" alt="" />
-                                <input type="file" class="form-control-file ml-3" name="editArtPhoto" accept="image/*" />
+                                <input type="file" class="form-control-file ml-3" name="editArtistPhoto" accept="image/*" />
                               </div>
                             </div>
                             <div class="form-group">
-                              <label for="editArtDesc">Deskripsi</label>
-                              <textarea class="form-control" name="editArtDesc" rows="3" placeholder="Masukan deskripsi artwork">{{ desc }}</textarea>
+                              <label for="editArtistDesc">Deskripsi</label>
+                              <textarea class="form-control" name="editArtistDesc" rows="3" placeholder="Masukan deskripsi artist">{{ desc }}</textarea>
                             </div>
                             <div class="form-group">
-                              <label for="editArtPrice">Harga</label>
-                              <input type="number" class="form-control" name="editArtPrice" value="{{ price }}" placeholder="Masukan harga artwork" />
+                              <label for="editArtistEmail">E-mail</label>
+                              <input type="email" class="form-control" name="editArtistEmail" placeholder="Masukan alamat email artist" value="{{ email }}" />
                             </div>
                             <div class="form-group">
-                              <label for="editArtStock">Stock</label>
-                              <input type="number" class="form-control" name="editArtStock" value="{{ qty }}" placeholder="Masukan jumlah stock artwork" />
+                              <label for="editArtistAcc">Nomor Rekening</label>
+                              <input type="number" class="form-control" name="editArtistAcc" value="{{ bank }}" placeholder="Masukan nomor rekening artist" />
+                              <div class="input-group mb-3 mt-2 mb-5">
+                                <label class="input-group-text" for="editArtistBank">Bank</label>
+                                <select class="form-select " id="editArtistBank">
+                                  <option selected disabled>Choose...</option>
+                                  <option value="BRi">BRi</option>
+                                  <option value="Mandyry">Mandyry</option>
+                                  <option value="BCE">BCE</option>
+                                  <option value="BTN">BTN</option>
+                                </select>
+                              </div>            
                             </div>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-bp">Save changes</button>
@@ -300,15 +303,15 @@
                     <div class="modal-dialog" role="document">
                       <div class="modal-content">
                         <div class="modal-header">
-                          <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus Data Artwork</h5>
+                          <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus Data Artist</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                         <div class="modal-body">
-                          <form action="/admin/artwork/delete" method="post">
+                          <form action="/admin/artist/delete" method="post">
                             <p>Are you sure you want to delete this data?</p>
                             <input type="text" value="{{ id }}" name="idDelete" hidden />
-                            <p>Artwork ID: {{ id }}</p>
-                            <p>Title: {{ title }}</p>
+                            <p>Artist ID: {{ id }}</p>
+                            <p>Nama Lengkap Artist: {{ fullname }}</p>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-danger">Delete</button>
                           </form>
@@ -324,7 +327,7 @@
       </div>
 
       <!-- MODAL FORM TAMBAH -->
-      <div class="modal" id="addArtworkModal" tabindex="-1" aria-hidden="true" style="display: none;">
+      <div class="modal" id="addArtistModal" tabindex="-1" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" role="document">
           <div class="modal-content p-3 py-4">
             <div class="modal-header">
@@ -334,35 +337,38 @@
             <div class="modal-body">
               <!-- Add Artist Form -->
               <div class="form-group">
-                <label for="artistName">Nama Artist</label>
-                <select id="artistName" class="form-control">
-                  <option selected disabled>Pilih ...</option>
-                  {% for artst in artists %}
-                    <option value="{{ artst.fullname }}">{{ artst.fullname }}</option>
-                  {% endfor %}
-                </select>
+                <label for="artistFullname">Nama Lengkap</label>
+                <input type="text" class="form-control" id="artistFullname" placeholder="Masukan nama artist" />
               </div>
               <div class="form-group">
-                <label for="artworkTitle">Title</label>
-                <input type="text" class="form-control" id="artworkTitle" placeholder="Masukan judul artwork" />
+                <label for="artistPhoto">Foto</label>
+                <div style="display: flex; align-items: center;">
+                  <input type="file" class="form-control-file ml-3" id="artistPhoto" accept="image/*" />
+                </div>
               </div>
               <div class="form-group">
-                <label for="artworkPhoto">Foto</label>
-                <input type="file" class="form-control-file" id="artworkPhoto" accept="image/*" />
+                <label for="artistDesc">Deskripsi</label>
+                <textarea class="form-control" id="artistDesc" rows="3" placeholder="Masukan deskripsi artist"></textarea>
               </div>
               <div class="form-group">
-                <label for="artworkDescription">Deskripsi</label>
-                <textarea class="form-control" id="artworkDescription" rows="3" placeholder="Masukan deskripsi artwork"></textarea>
+                <label for="artistEmail">E-mail</label>
+                <input type="email" class="form-control" id="artistEmail" placeholder="Masukan alamat email artist" />
               </div>
               <div class="form-group">
-                <label for="artworkPrice">Harga</label>
-                <input type="number" class="form-control" id="artworkPrice" placeholder="Masukan harga artwork" />
+                <label for="artistAcc">Nomor Rekening</label>
+                <input type="number" class="form-control" id="artistAcc"placeholder="Masukan nomor rekening artist" />
+                <div class="input-group mb-3 mt-2 mb-4">
+                  <label class="input-group-text" for="artistBank">Bank</label>
+                  <select class="form-select " name="editArtistBank">
+                    <option selected disabled value="">Choose...</option>
+                    <option value="BRi">BRi</option>
+                    <option value="Mandyry">Mandyry</option>
+                    <option value="BCE">BCE</option>
+                    <option value="BTN">BTN</option>
+                  </select>
+                </div>            
               </div>
-              <div class="form-group">
-                <label for="artworkStock">Stock</label>
-                <input type="number" class="form-control" id="artworkStock" placeholder="Masukan jumlah stock artwork" />
-              </div>
-              <button onclick="tambah_artwork()" class="btn btn-bp w-100 my-3">Tambah Artwork</button>
+              <button onclick="tambah_artist()" class="btn btn-bp w-100 my-3">Tambah Artist</button>
             </div>
           </div>
         </div>
@@ -413,25 +419,25 @@
       })
       
       // Tambah Artwork
-      function tambah_artwork() {
-        let artistName = $('#artistName').val()
-        let artworkTitle = $('#artworkTitle').val()
-        let artworkPhoto = $('#artworkPhoto')[0].files[0]
-        let artworkDesc = $('#artworkDescription').val()
-        let artworkPrice = $('#artworkPrice').val()
-        let artworkStock = $('#artworkStock').val()
-        console.log(artistName, artworkTitle, artworkPhoto, artworkDesc, artworkPrice, artworkStock)
+      function tambah_artist() {
+        let artistFullname = $('#artistFullname').val()
+        let artistPhoto = $('#artistPhoto')[0].files[0]
+        let artistDesc = $('#artistDesc').val()
+        let artistEmail = $('#artistEmail').val()
+        let artistAcc = $('#artistAcc').val()
+        let artistBank = $('#artistBank').val()
+        console.log(artistFullname, artistPhoto, artistDesc, artistEmail, artistAcc, artistBank)
       
         let form_data = new FormData()
-        form_data.append('artistName_give', artistName)
-        form_data.append('artworkTitle_give', artworkTitle)
-        form_data.append('artworkPhoto_give', artworkPhoto)
-        form_data.append('artworkDesc_give', artworkDesc)
-        form_data.append('artworkPrice_give', artworkPrice)
-        form_data.append('artworkStock_give', artworkStock)
+        form_data.append('artistFullname_give', artistFullname)
+        form_data.append('artistPhoto_give', artistPhoto)
+        form_data.append('artistDesc_give', artistDesc)
+        form_data.append('artistEmail_give', artistEmail)
+        form_data.append('artistAcc_give', artistAcc)
+        form_data.append('artistBank_give', artistBank)
         $.ajax({
           type: 'POST',
-          url: '/tambah_artwork',
+          url: '/tambah_artist',
           data: form_data,
           cache: false,
           processData: false,
