@@ -69,7 +69,6 @@
             font-family: 'Playfair Display', serif;
         }
 
-        /* ============================= CSS CARD ============================= */
         .artwork-container h1 {
             font-family: 'Playfair Display', serif;
             color: white;
@@ -79,19 +78,21 @@
             margin-bottom: 50px;
         }
 
-        .card-img-top {
-            border-radius: 50px;
-            padding: 20px;
+        /* ============================= CSS CARD ============================= */
+
+        .img-wrapper {
+            height: 9200px;
+            background: blue;
+            width: 100%;
+            max-height: 3500px;
+
         }
 
-        .card .img-wrapper {
-            height: 272px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            flex: 0 0 auto; 
+        .card-img-top {
+            min-height: 300px; /* Tinggi minimum gambar 300px */
+            width: auto; /* Lebar menyesuaikan tinggi gambar */
+            max-width: 100%; /* Memastikan lebar tidak melebihi container */
+            object-fit: cover; /* Memastikan gambar diubah proporsinya untuk mengisi ruang yang tersedia */
         }
 
         .card {
@@ -100,14 +101,15 @@
             font-family: 'Poppins', sans-serif;
 
             height: 100%;
-            max-height: 500px; /* Sesuaikan dengan tinggi yang diinginkan */
+            max-height: 500px;
+            /* Sesuaikan dengan tinggi yang diinginkan */
         }
 
         .card-body {
-            padding: 25px;
-            margin-top: -15px;    
-            overflow: auto; /* Untuk memotong konten yang melebihi tinggi */
+            margin-top: 20px;
+            overflow: auto;
             margin-bottom: 20px;
+
         }
 
         .card-tile {
@@ -149,17 +151,17 @@
         }
     </style>
     <script>
-        $(document).ready(function() {
-            $('h3 strong').each(function() {
+        $(document).ready(function () {
+            $('h3 strong').each(function () {
                 let priceText = $(this).text(); // Ambil nilai teks dari elemen strong
                 let price = parseFloat(priceText); // Ubah teks menjadi angka
-                
+
                 // Ubah nilai angka ke dalam format mata uang Rupiah
                 let formattedPrice = price.toLocaleString('id-ID', {
                     style: 'currency',
                     currency: 'IDR'
                 });
-                
+
                 // Gantikan nilai teks di dalam elemen strong dengan format mata uang Rupiah
                 $(this).text(formattedPrice);
             });
@@ -192,7 +194,7 @@
                         <a class="nav-link" href="#">Article</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Profile</a>
+                        <a class="nav-link" href="/fans/profile">Profile</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">About</a>
@@ -207,16 +209,17 @@
             <h1 class="text-center">Artwork</h1>
             <div class="row row-cols-1 row-cols-md-3 g-4 py-5">
 
+
+
                 {% for art in artwork %}
                 <a href="/artwork/detail?id={{ art._id }}">
                     <div class="col">
                         <div class="card">
-                            <div class="img-wrapper"><img src="{{ url_for('static', filename=art.photo_real) }}"
-                                    class="d-block w-100" alt="...">
-                            </div>
+                            <img src="{{ url_for('static', filename=art.photo_real) }}" class="card-img-top"
+                                alt="Artwork">
                             <div class="card-body">
                                 <h5 class="card-title"><strong>{{art.title}}</strong></h5>
-                                <p class="card-text">{{art.desc}}{{art.desc}}{{art.desc}}{{art.desc}}</p>
+                                <p class="card-text">{{art.desc}}</p>
                             </div>
                             <div class="mb-5 d-flex justify-content-around">
                                 <h3><strong>{{art.price}}</strong></h3>
@@ -225,122 +228,6 @@
                     </div>
                 </a>
                 {% endfor %}
-                <!-- <a href="/artwork/detail">
-                    <div class="col">
-                        <div class="card">
-                            <img src="{{ url_for('static', filename='artwork/3.jpg') }}" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">Natascha Reiterer - Extremophile 8948</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Laboriosam
-                                    dignissimos accusantium amet similique velit iste.</p>
-                            </div>
-                            <div class="mb-5 d-flex justify-content-around">
-                                <div class="mb-5 d-flex justify-content-around">
-                                    <h3>Rp 100.000</h3>
-                                </div>
-                                <button class="btn btn-primary">Buy Now</button>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-
-                <a href="/artwork/detail">
-                    <div class="col">
-                        <div class="card">
-                            <img src="{{ url_for('static', filename='artwork/3.jpg') }}" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">Natascha Reiterer - Extremophile 8948</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Laboriosam
-                                    dignissimos accusantium amet similique velit iste.</p>
-                            </div>
-                            <div class="mb-5 d-flex justify-content-around">
-                                <div class="mb-5 d-flex justify-content-around">
-                                    <h3>Rp 100.000</h3>
-                                </div>
-                                <button class="btn btn-primary">Buy Now</button>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="/artwork/detail">
-                    <div class="col">
-                        <div class="card">
-                            <img src="{{ url_for('static', filename='artwork/3.jpg') }}" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">Natascha Reiterer - Extremophile 8948</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Laboriosam
-                                    dignissimos accusantium amet similique velit iste.</p>
-                            </div>
-                            <div class="mb-5 d-flex justify-content-around">
-                                <div class="mb-5 d-flex justify-content-around">
-                                    <h3>Rp 100.000</h3>
-                                </div>
-                                <button class="btn btn-primary">Buy Now</button>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="/artwork/detail">
-                    <div class="col">
-                        <div class="card">
-                            <img src="{{ url_for('static', filename='artwork/3.jpg') }}" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">Natascha Reiterer - Extremophile 8948</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Laboriosam
-                                    dignissimos accusantium amet similique velit iste.</p>
-                            </div>
-                            <div class="mb-5 d-flex justify-content-around">
-                                <div class="mb-5 d-flex justify-content-around">
-                                    <h3>Rp 100.000</h3>
-                                </div>
-                                <button class="btn btn-primary">Buy Now</button>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="/artwork/detail">
-                    <div class="col">
-                        <div class="card">
-                            <img src="{{ url_for('static', filename='artwork/3.jpg') }}" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">Natascha Reiterer - Extremophile 8948</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Laboriosam
-                                    dignissimos accusantium amet similique velit iste.</p>
-                            </div>
-                            <div class="mb-5 d-flex justify-content-around">
-                                <div class="mb-5 d-flex justify-content-around">
-                                    <h3>Rp 100.000</h3>
-                                </div>
-                                <button class="btn btn-primary">Buy Now</button>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="/artwork/detail">
-                    <div class="col">
-                        <div class="card">
-                            <img src="{{ url_for('static', filename='artwork/3.jpg') }}" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">Natascha Reiterer - Extremophile 8948</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Laboriosam
-                                    dignissimos accusantium amet similique velit iste.</p>
-                            </div>
-                            <div class="mb-5 d-flex justify-content-around">
-                                <div class="mb-5 d-flex justify-content-around">
-                                    <h3>Rp 100.000</h3>
-                                </div>
-                                <button class="btn btn-primary">Buy Now</button>
-                            </div>
-                        </div>
-                    </div>
-                </a> -->
-
-
             </div>
         </div>
     </div>
