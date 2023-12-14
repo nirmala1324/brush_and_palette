@@ -154,8 +154,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
             flex: 0 0 auto;
         }
 
@@ -170,12 +168,11 @@
         .card img {
             max-width: 100%;
             max-height: 100%;
-            object-fit: contain;
+            object-fit: cover;
         }
 
         .card-body {
-            padding: 25px;
-            margin-top: -15px;
+            margin-top: 20px;
             overflow: auto;
             margin-bottom: 20px;
         }
@@ -211,6 +208,7 @@
                 display: flex;
             }
         }
+
         /* CSS */
         .text-large {
             font-size: 24px;
@@ -307,7 +305,7 @@
                         <a class="nav-link" href="#">Article</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Profile</a>
+                        <a class="nav-link" href="/fans/profile">Profile</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">About</a>
@@ -334,18 +332,20 @@
 
                 {% for artwork in result %}
                 <div class="carousel-item active">
-                    <div class="card">
-                        <div class="img-wrapper"><img src="{{ url_for('static', filename=artwork.photo_real) }}"
-                                class="d-block w-100" alt="...">
+                    <a href="/artwork/detail?id={{ artwork._id }}">
+                        <div class="card">
+                            <div class="img-wrapper"><img src="{{ url_for('static', filename=artwork.photo_real) }}"
+                                    class="d-block w-100" alt="...">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title"><strong>{{artwork.title}}</strong></h5>
+                                <p class="card-text">{{artwork.desc}}</p>
+                            </div>
+                            <div class="mb-5 d-flex justify-content-around">
+                                <h3><strong>{{artwork.price}}</strong></h3>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title"><strong>{{artwork.title}}</strong></h5>
-                            <p class="card-text">{{artwork.desc}}</p>
-                        </div>
-                        <div class="mb-5 d-flex justify-content-around">
-                            <h3><strong>{{artwork.price}}</strong></h3>
-                        </div>
-                    </div>
+                    </a>
                 </div>
                 {% endfor %}
 
