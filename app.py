@@ -426,19 +426,22 @@ def tambah_artwork():
             algorithms=['HS256']
         )
         # Retrieve data given from client
-        artistName_receive = request.form.get('artistName_give')
-        artist = str(artistName_receive)
+        artistID_receive = request.form.get('artistID_give')
+        artist = ObjectId(artistID_receive)
         artworkTitle_receive = request.form.get('artworkTitle_give')
         artworkDesc_receive = request.form.get('artworkDesc_give')
         artworkPrice_receive = int(request.form.get('artworkPrice_give'))
         artworkStock_receive = int(request.form.get('artworkStock_give'))
         # Randomize ID for Artwork
         artworkId = "AW_" + generate_random_id()
+        artistName_db = db.artist.find_one({'_id': artist}, {'fullname': 1, '_id': 0})
+        artistName = artistName_db['fullname']
         # Insert data inside new_doc
         new_doc = {
             'artwork_id': artworkId,
+            'artist': artistName,
             'title': artworkTitle_receive,
-            'artist': artist,
+            'artist_id': artist,
             'desc': artworkDesc_receive,
             'price': artworkPrice_receive,
             'stock': artworkStock_receive,
@@ -500,7 +503,9 @@ def edit_artwork():
 
 @app.route('/admin/artwork/delete', methods = ['POST'])
 def delete_artwork():
+    photo = request.form['photo']
     artworkID = request.form['idDelete']
+    os.remove('./static/' + photo)
     db.artwork.delete_one({'artwork_id':artworkID})
     msg = 'Artwork '+ artworkID +' successfully deleted'
     return redirect(url_for('menu_artwork', msg = msg))
@@ -577,7 +582,7 @@ def edit_artist():
 
     if artistNewPhoto_receive:
         if os.path.exists(prev_file_path):
-            os.remove('./static/' + artistPrevPhoto_receive)
+            os.remove(prev_file_path)
         file = artistNewPhoto_receive
         filename = secure_filename(file.filename)
         # extract extension file
@@ -596,9 +601,15 @@ def edit_artist():
 @app.route('/admin/artist/delete', methods = ['POST'])
 def delete_artist():
     artistID = request.form['idDelete']
+    photo = request.form['photo']
+    os.remove('./static/' + photo)
     db.artist.delete_one({'artist_id':artistID})
     msg = 'Artist'+ artistID +' successfully deleted'
     return redirect(url_for('menu_artist', msg = msg))
+
+# --------------------------------------------------------------------------------
+
+# ARTIST FANS
 
 @app.route('/artist')
 def artists():
