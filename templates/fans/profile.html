@@ -22,12 +22,12 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-
         function logout() {
             $.removeCookie('mytoken')
             alert('You have been logged out')
             window.location.href = '/'
         }
+
         function showArtistDetail(artistId) {
             window.location.href = "/artist/" + artistId;
         }
@@ -35,49 +35,44 @@
             get_posts()
         });
 
-        function update_profile() {
-            let username = $("#input-username").val();
-            let name = $("#input-name").val();
-            let phone = $("#input-phone").val();
-            let address = $("#input-address").val(); // Mendapatkan nilai alamat dari input form
+        $("#modal-edit-profile button.btn-primary").click(function (event) {
+            let username = $('#input-username').val()
+            let name = $('#input-name').val()
+            let file = $('#input-pic')[0].files[0]
+            let phone = $('#input-phone').val()
+            let address = $('#input-address').val()
 
-            let file = $("#input-pic")[0].files[0];
+            // 2. Menyiapkan form data
+            let form_data = new FormData()
+            form_data.append('username_give', username)
+            form_data.append('name_give', name)
+            form_data.append('file_give', file)
+            form_data.append('phone_give', phone)
+            form_data.append('address_give', address)
 
-            let form_data = new FormData();
-            form_data.append("file_give", file);
-            form_data.append("name_give", name);
-            form_data.append("username_give", username);
-            form_data.append("phone_give", phone);
-            form_data.append("alamat_give", address); // Menambahkan alamat ke dalam FormData
-
+            // 3. Mengirimkan permintaan AJAX
             $.ajax({
-                type: "POST",
-                url: "/update_profile",
+                type: 'POST',
+                url: '/update_profile',
                 data: form_data,
-                enctype: 'multipart/form-data',
+                cache: false,
                 processData: false,
                 contentType: false,
-                cache: false,
                 success: function (response) {
-                    if (response.result === "success") {
-                        alert(response.msg);
-                        // Reload halaman setelah update berhasil
-                        location.reload();
-                    } else {
-                        alert("Failed to update profile");
+                    // 4. Menangani respons
+                    if (response['result'] === 'success') {
+                        alert(response['msg'])
+                        window.location.reload()
                     }
-                },
-                error: function (error) {
-                    alert("Error occurred while updating profile");
-                    console.error(error);
                 }
-            });
-        }
+            })
+        });
 
         function sign_out() {
 
             window.location.href = "/login";
         }
+
         function confirmPurchase(purchaseId) {
             // Ganti status menjadi Sukses
             document.getElementById('status_' + purchaseId).innerText = 'Sukses';
@@ -139,7 +134,6 @@
                 alert('Anda memberikan rating: ' + rating);
             }
         });
-
     </script>
     <style>
         body {
@@ -501,8 +495,7 @@
         <div class="hero-body">
             <article class="media profile-details">
                 <figure class="media-left" style="align-self: center">
-                    <img class="is-rounded"
-                        src="{{ url_for('static', filename='fans/profile/' + user_login.profile_pic_real) }}" />
+                    <img class="is-rounded" src="{{ url_for('static', filename=user_info.profile_pic_real) }}">
                 </figure>
                 <div class="media-content profile-details-text">
 
@@ -514,7 +507,7 @@
     </section>
 
     <div class="d-flex justify-content-center mt-3">
-        <a class="button is-sparta" aria-label="edit" data-bs-toggle="modal" data-bs-target="#modal-edit">
+        <a class="button is-sparta" aria-label="edit" data-bs-toggle="modal" data-bs-target="#modal-edit-profile">
             Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
                     aria-hidden="true"></i></span>
         </a>
@@ -524,72 +517,55 @@
         </a>
     </div>
 
-    <div class="modal" id="modal-edit">
-        <div class="modal-background" onclick='$("#modal-edit").removeClass("is-active")'></div>
-        <div class="modal-content">
-            <div class="box">
-                <article class="media">
-                    <div class="media-content">
-                        <form id="profile-form" enctype="multipart/form-data">
-                            <div class="field">
-                                <label class="label" for="input-username">Username</label>
-                                <p class="control">
-                                    <input id="input-username" class="input" placeholder="Your username"
-                                        value="{{ user_login.username }}" />
-                                </p>
-                            </div>
-                            <div class="field">
-                                <label class="label" for="input-name">Name</label>
-                                <p class="control">
-                                    <input id="input-name" class="input" placeholder="Your name"
-                                        value="{{ user_login.name }}" />
-                                </p>
-                            </div>
-                            <div class="field">
-                                <label class="label" for="input-pic">Profile Picture</label>
-                                <div class="control is-expanded">
-                                    <div class="file has-name">
-                                        <label class="file-label" style="width: 100%">
-                                            <input id="input-pic" class="file-input" type="file" name="resume" />
-                                            <span class="file-cta">
-                                                <span class="file-icon"><i class="fa fa-upload"></i></span>
-                                                <span class="file-label">Select a file</span>
-                                            </span>
-                                            <span id="file-name" class="file-name"
-                                                style="width: 100%; max-width: 100%">{{ user_login.profile_pic_real
-                                                }}</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <label class="label" for="input-phone">Phone</label>
-                                <p class="control">
-                                    <input id="input-phone" class="input" placeholder="Your phone number"
-                                        value="{{ user_login.phone }}" />
-                                </p>
-                            </div>
-                            <div class="field">
-                                <label class="label" for="input-address">Address</label>
-                                <p class="control">
-                                    <textarea id="input-address" class="textarea"
-                                        placeholder="Your address">{{ user_login.alamat }}</textarea>
-                                </p>
-                            </div>
 
-                            <div class="field is-grouped">
-                                <div class="control">
-                                    <button class="button is-link" onclick="update_profile()">Update</button>
-                                    <button class="button is-danger"
-                                        onclick='$("#modal-edit").removeClass("is-active")'>Cancel</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </article>
+    <!-- ========================MODAL EDIT PROFIL========================================== -->
+    <div class="modal fade" id="modal-edit-profile" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Profile</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/update-profile" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="username">Username:</label>
+                            <input type="text" class="form-control" id="username" name="username"
+                                value="{{ user_login.username }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="name">Name:</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ user_login.name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="profile_pic">Profile Picture:</label>
+                            <input type="file" class="form-control" id="profile_pic" name="profile_pic"
+                                value="{{ user_login.profile_pic_real }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone">Phone Number:</label>
+                            <input type="tel" class="form-control" id="phone" name="phone"
+                                value="{{ user_login.phone }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address">Address:</label>
+                            <textarea class="form-control" id="address" name="address"
+                                rows="3">{{ user_login.alamat }}</textarea>
+                        </div>
+                        <input type="hidden" name="user_id" value="{{ user_id }}">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- ========================MODAL EDIT PROFIL========================================== -->
+
 
 
     <!-- Log Pembelian -->
