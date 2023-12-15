@@ -6,45 +6,52 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+    </script>
 
+    <!-- bootstrap-icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" />
     <!-- Font Awesome CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 
-    <!-- Google Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@500&family=Poppins&display=swap"
-        rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- ajax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 
     <script>
-        function logout() {
-            $.removeCookie('mytoken')
-            alert('You have been logged out')
-            window.location.href = '/'
-        }
-
-        function showArtistDetail(artistId) {
-            window.location.href = "/artist/" + artistId;
-        }
         $(document).ready(function () {
-            get_posts()
+            // get_data('{{ user_info.username }}')
         });
 
-        $("#modal-edit-profile button.btn-primary").click(function (event) {
-            let username = $('#input-username').val()
+        function logout() {
+            $.removeCookie('mytoken', {
+                path: '/'
+            })
+            alert('Signed out!')
+            window.location.href = '/login'
+        }
+
+        function update_profile() {
             let name = $('#input-name').val()
             let file = $('#input-pic')[0].files[0]
             let phone = $('#input-phone').val()
             let address = $('#input-address').val()
 
-            // 2. Menyiapkan form data
             let form_data = new FormData()
-            form_data.append('username_give', username)
             form_data.append('name_give', name)
             form_data.append('file_give', file)
             form_data.append('phone_give', phone)
@@ -66,11 +73,6 @@
                     }
                 }
             })
-        });
-
-        function sign_out() {
-
-            window.location.href = "/login";
         }
 
         function confirmPurchase(purchaseId) {
@@ -102,8 +104,7 @@
             var comment = $('#comment').val();
             var rating = $('#rating').val();
 
-            // Lakukan sesuatu dengan komentar dan rating yang disimpan
-            // Misalnya, kirim ke backend atau lakukan operasi lainnya
+
 
             // Setelah menyimpan, tutup modal
             $('#modal-comment').modal('hide');
@@ -483,95 +484,133 @@
         </div>
     </nav>
 
-    <div class="logo-container">
-        <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
-    </div>
-
-    <div class="container">
-        <h2 class="custom-heading">{{ user_login.name }}</h2>
-    </div>
-
-    <section class="hero is-white">
-        <div class="hero-body">
-            <article class="media profile-details">
-                <figure class="media-left" style="align-self: center">
-                    <img class="is-rounded" src="{{ url_for('static', filename=user_info.profile_pic_real) }}">
-                </figure>
-                <div class="media-content profile-details-text">
-
-                    <strong>@{{ user_info.username }}</strong>
-
-                </div>
-            </article>
-        </div>
-    </section>
-
-    <div class="d-flex justify-content-center mt-3">
-        <a class="button is-sparta" aria-label="edit" data-bs-toggle="modal" data-bs-target="#modal-edit-profile">
-            Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
-                    aria-hidden="true"></i></span>
-        </a>
-        <a class="button is-sparta is-outlined ms-2" aria-label="logout" onclick="sign_out()">
-            Sign Out&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-sign-out"
-                    aria-hidden="true"></i></span>
-        </a>
-    </div>
 
 
-    <!-- ========================MODAL EDIT PROFIL========================================== -->
-    <div class="modal fade" id="modal-edit-profile" tabindex="-1" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Profile</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="/update-profile" method="post" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="username">Username:</label>
-                            <input type="text" class="form-control" id="username" name="username"
-                                value="{{ user_login.username }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="name">Name:</label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ user_login.name }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="profile_pic">Profile Picture:</label>
-                            <input type="file" class="form-control" id="profile_pic" name="profile_pic"
-                                value="{{ user_login.profile_pic_real }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="phone">Phone Number:</label>
-                            <input type="tel" class="form-control" id="phone" name="phone"
-                                value="{{ user_login.phone }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="address">Address:</label>
-                            <textarea class="form-control" id="address" name="address"
-                                rows="3">{{ user_login.alamat }}</textarea>
-                        </div>
-                        <input type="hidden" name="user_id" value="{{ user_id }}">
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+
+
+
+    <section class="hero is-white" style="padding-top: 100px;">
+        <div class="hero-body" style="padding-bottom: 1rem; margin: auto; min-width: 400px; text-align: center;">
+            <div class="mb-4">
+                <img class="rounded-circle" src="{{ url_for('static', filename=user_info.profile_pic_real) }}"
+                    alt="Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
+            </div>
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong>{{ user_info.name }}</strong> <small>@{{ user_info.username }}</small>
+                        <br>
+                        <strong>Phone:</strong> {{ user_info.phone }}<br>
+                        <strong>Address:</strong> {{ user_info.alamat }}
+                    </p>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    {% if status %}
+
+        <div class="d-flex justify-content-center mt-3">
+            <a class="button level-item has-text-centered is-sparta" onclick="$('#modal-edit').addClass('is-active')"
+                aria-label="edit">
+                Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
+                    aria-hidden="true"></i></span>
+            </a>
+    
+            <a class="button is-sparta is-outlined ms-2" aria-label="logout" onclick="logout()">
+                Sign Out&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-sign-out"
+                        aria-hidden="true"></i></span>
+            </a>
+        </div>
+
+        <div class="modal" id="modal-edit">
+            <div class="modal-background" onclick="$('#modal-edit').removeClass('is-active')">
+            </div>
+
+            <div class="modal-content">
+                <div class="box">
+                    <article class="media">
+                        <div class="media-content">
+                            <div class="field">
+                                <label for="input-name" class="label">Name</label>
+                                <p class="control">
+                                    <input id="input-name" class="input" placeholder="Input your name"
+                                        value="{{ user_info.name }}">
+                                </p>
+                            </div>
+
+                            <div class="field">
+                                <label for="input-pic" class="label">Profile picture</label>
+                                <div class="control is-expanded">
+                                    <div class="file has-name">
+                                        <label class="file-label" style="width: 100%">
+                                            <input id="input-pic" class="file-input" type="file" name="resume">
+                                            <span class="file-cta">
+                                                <span class="file-icon">
+                                                    <i class="fa fa-upload"></i>
+                                                </span>
+                                                <span class="file-label">
+                                                    Select a file
+                                                </span>
+                                            </span>
+                                            <span id="file-name" class="file-name" style="width:100%; max-width:100%">
+                                                {{ user_info.profile_pic }}
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label for="input-phone" class="label">Phone Number</label>
+                                <p class="control">
+                                    <input id="input-phone" class="input" type="tel"
+                                        placeholder="Enter your phone number" value="{{ user_info.phone }}">
+                                </p>
+                            </div>
+
+                            <div class="field">
+                                <label for="input-address" class="label">Address</label>
+                                <p class="control">
+                                    <input id="input-address" class="input" type="text" placeholder="Enter your address"
+                                        value="{{ user_info.alamat }}">
+                                </p>
+                            </div>
+
+                            <nav class="level is-mobile">
+                                <div class="level-left">
+                                    <div class="level-item">
+                                        <a class="button is-sparta is-black" onclick="update_profile()">
+                                            Save
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="level-right">
+                                    <div class="level-item">
+                                        <a class="button is-sparta is-black"
+                                            onclick="$('#modal-edit').removeClass('is-active')">
+                                            Cancel
+                                        </a>
+                                    </div>
+                                </div>
+                            </nav>
+
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+
+    {% endif %}
 
     <!-- ========================MODAL EDIT PROFIL========================================== -->
 
 
 
     <!-- Log Pembelian -->
-    <div class="purchase-log">
+    <!-- <div class="purchase-log">
         {% for purchase in purchases %}
-        {% if purchase.user_id == user_login.id %}
+        {% if purchase.user_id == user_info.id %}
         <div class="purchase-card">
             <h3>Log Pembelian</h3>
             <p>Tanggal: {{ purchase.timestamp }}</p>
@@ -584,7 +623,7 @@
         </div>
         {% endif %}
         {% endfor %}
-    </div>
+    </div> -->
 
 
     <!-- Modal Komentar -->
