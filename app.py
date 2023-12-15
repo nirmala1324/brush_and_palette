@@ -43,7 +43,7 @@ def home():
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
 
-        result = db.artwork.find({})
+        result = db.artwork.find({}).sort('price', -1)
         return render_template("fans/index.html", user_info=user_info, result=result)
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
@@ -135,7 +135,7 @@ def get_artwork():
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
 
-        artwork = db.artwork.find({})
+        artwork = db.artwork.find({}).sort('price', -1)
         return render_template(
             "fans/artwork.html", user_info=user_info, artwork=artwork
         )
@@ -625,10 +625,16 @@ def delete_artist():
 @app.route("/artist")
 def artists():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+        artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1, "photo": 1}))
 
-    artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1, "photo": 1}))
-
-    return render_template("fans/artist.html", artists_data=artists_data)
+        return render_template("fans/artist.html", artists_data=artists_data, user_info=user_info)
+    
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
 
 
 @app.route("/artist/<artist_id>")
@@ -636,7 +642,7 @@ def artist_detail(artist_id):
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        username = payload["id"]
+        user_info = db.user_login.find_one({"username": payload.get("id")})
         artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1}))
         artist_data = db.artist.find_one(
             {"_id": ObjectId(artist_id)},
@@ -653,12 +659,14 @@ def artist_detail(artist_id):
                 artist_data=artist_data,
                 artworks=artworks,
                 artists_data=artists_data,
+                user_info=user_info
             )
         else:
             return "Artist data not found"
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for("login"))
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
 
 
 
@@ -668,7 +676,7 @@ def profile(username):
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        user_purchases = db.purchases.find({"username": username})
+        user_purchases = db.purchases.find({"username": username}).sort('timestamp', -1)
         user_info = db.user_login.find_one(
             {'username': username},
             {'_id': False}
@@ -681,7 +689,9 @@ def profile(username):
         )
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for("profile"))
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+    
 @app.route("/update_profile", methods=['POST'])
 def update_profile():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)

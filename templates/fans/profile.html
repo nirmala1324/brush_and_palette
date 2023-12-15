@@ -142,7 +142,7 @@
 
         function uploadBuktiPembelian() {
             var modalInputImage = $("#modalInputImage")[0]; // Get the file input element
-            var purchasesId  = $("#purchases_id").val()
+            var purchasesId = $("#purchases_id").val()
             var file = modalInputImage.files[0];
 
             if (!file) {
@@ -151,7 +151,7 @@
             }
 
             var formData = new FormData();
-            formData.append("bukti_pembelian", file); 
+            formData.append("bukti_pembelian", file);
             formData.append("purchases_id", purchasesId);
 
 
@@ -654,31 +654,30 @@
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Upload bukti pembelian
             </button>
+        </div>
+    </div>
 
-            <!-- ======================MODAL KONFIRMASI PEMBELIAN============================= -->
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel"
-                                style="color:white; font-family: 'Playfair Display', serif;">Upload bukti pembelian</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="modalInputImage" class="form-label"
-                                    style="color:white; font-family: 'Playfair Display', serif;">Foto</label>
-                                <input type="file" class="form-control" id="modalInputImage" accept="image/*" required>
-                                <input type="hidden" id="purchases_id" value="{{ purchase._id }}">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" onclick="uploadBuktiPembelian()"
-                                class="btn btn-primary">Kirim</button>
-                        </div>
+
+    <!-- ======================MODAL UPLOAD BUKTI PEMBELIAN============================= -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel"
+                        style="color:white; font-family: 'Playfair Display', serif;">Upload bukti pembelian</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modalInputImage" class="form-label"
+                            style="color:white; font-family: 'Playfair Display', serif;">Foto</label>
+                        <input type="file" class="form-control" id="modalInputImage" accept="image/*" required>
+                        <input type="hidden" id="purchases_id" value="{{ purchase._id }}">
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" onclick="uploadBuktiPembelian()" class="btn btn-primary">Kirim</button>
                 </div>
             </div>
         </div>
