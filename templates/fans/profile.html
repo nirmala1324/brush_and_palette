@@ -45,6 +45,8 @@
             window.location.href = '/login'
         }
 
+
+
         function update_profile() {
             let name = $('#input-name').val()
             let file = $('#input-pic')[0].files[0]
@@ -81,6 +83,7 @@
 
             // Tampilkan pesan pop-up
             alert('Konfirmasi sukses!');
+            showCommentModal();
         }
 
         function changeStatus(button) {
@@ -98,43 +101,79 @@
             $('#modal-comment').modal('show');
         }
 
+
         // Fungsi untuk menyimpan komentar
-        function saveComment() {
-            // Dapatkan nilai komentar dan rating dari form
+        function submitComment() {
+            var artworkId = $('[name="artwork_id"]').val(); // Ambil nilai artwork_id
             var comment = $('#comment').val();
-            var rating = $('#rating').val();
+            var rating = $('#star').val();
 
-
-
-            // Setelah menyimpan, tutup modal
-            $('#modal-comment').modal('hide');
-        }
-
-        // Fungsi untuk mengonfirmasi pembelian dengan menampilkan modal komentar
-        function confirmPurchase(purchaseId) {
-            // Ganti status menjadi Sukses
-            document.getElementById('status_' + purchaseId).innerText = 'Sukses';
-
-            // Tampilkan pesan pop-up
-            alert('Konfirmasi sukses!');
-
-            // Tampilkan modal komentar
-            showCommentModal();
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const stars = document.querySelectorAll('.star');
-
-            stars.forEach(function (star) {
-                star.addEventListener('click', setRating);
-            });
-
-            function setRating(e) {
-                let clickedStar = e.target;
-                let rating = clickedStar.dataset.rating;
-                alert('Anda memberikan rating: ' + rating);
+            if (!comment) {
+                alert("Silakan tulis komen anda");
+                return;
             }
-        });
+
+            if (!rating) {
+                alert("Silakan pilih rating.");
+                return;
+            }
+
+            var data = {
+                artwork_id: artworkId,
+                comment: comment,
+                rating: rating
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/artwork/review',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function (response) {
+                    if (response['result'] === 'success') {
+                        alert(response['msg'])
+                        window.location.reload()
+                    } else {
+                        alert(response['msg'])
+                    }
+                },
+            });
+        }
+
+        function uploadBuktiPembelian() {
+            var modalInputImage = $("#modalInputImage")[0]; // Get the file input element
+            var purchasesId  = $("#purchases_id").val()
+            var file = modalInputImage.files[0];
+
+            if (!file) {
+                alert('Tolong upload bukti pembelian!')
+                return
+            }
+
+            var formData = new FormData();
+            formData.append("bukti_pembelian", file); 
+            formData.append("purchases_id", purchasesId);
+
+
+            // Send the POST request with AJAX
+            $.ajax({
+                url: "/upload-bukti",
+                method: "POST",
+                data: formData,
+                contentType: false, // To prevent jQuery from encoding the form data
+                processData: false, // To send the formData object as is
+                success: function (data) {
+                    // Handle successful upload response
+                    // You can close the modal, show a success message, etc.
+                    console.log("Bukti pembelian berhasil diupload!");
+                    $("#exampleModal").modal("hide");
+                },
+                error: function (error) {
+                    // Handle error response
+                    console.error("Error uploading bukti pembelian:", error);
+                }
+            });
+        }
     </script>
     <style>
         body {
@@ -508,122 +547,145 @@
         </div>
     </section>
 
-    {% if status %}
 
-        <div class="d-flex justify-content-center mt-3">
-            <a class="button level-item has-text-centered is-sparta" onclick="$('#modal-edit').addClass('is-active')"
-                aria-label="edit">
-                Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
+    <div class="d-flex justify-content-center mt-3">
+        <a class="button level-item has-text-centered is-sparta" onclick="$('#modal-edit').addClass('is-active')"
+            aria-label="edit">
+            Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
                     aria-hidden="true"></i></span>
-            </a>
-    
-            <a class="button is-sparta is-outlined ms-2" aria-label="logout" onclick="logout()">
-                Sign Out&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-sign-out"
-                        aria-hidden="true"></i></span>
-            </a>
+        </a>
+
+        <a class="button is-sparta is-outlined ms-2" aria-label="logout" onclick="logout()">
+            Sign Out&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-sign-out"
+                    aria-hidden="true"></i></span>
+        </a>
+    </div>
+
+    <div class="modal" id="modal-edit">
+        <div class="modal-background" onclick="$('#modal-edit').removeClass('is-active')">
         </div>
 
-        <div class="modal" id="modal-edit">
-            <div class="modal-background" onclick="$('#modal-edit').removeClass('is-active')">
-            </div>
-
-            <div class="modal-content">
-                <div class="box">
-                    <article class="media">
-                        <div class="media-content">
-                            <div class="field">
-                                <label for="input-name" class="label">Name</label>
-                                <p class="control">
-                                    <input id="input-name" class="input" placeholder="Input your name"
-                                        value="{{ user_info.name }}">
-                                </p>
-                            </div>
-
-                            <div class="field">
-                                <label for="input-pic" class="label">Profile picture</label>
-                                <div class="control is-expanded">
-                                    <div class="file has-name">
-                                        <label class="file-label" style="width: 100%">
-                                            <input id="input-pic" class="file-input" type="file" name="resume">
-                                            <span class="file-cta">
-                                                <span class="file-icon">
-                                                    <i class="fa fa-upload"></i>
-                                                </span>
-                                                <span class="file-label">
-                                                    Select a file
-                                                </span>
-                                            </span>
-                                            <span id="file-name" class="file-name" style="width:100%; max-width:100%">
-                                                {{ user_info.profile_pic }}
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <label for="input-phone" class="label">Phone Number</label>
-                                <p class="control">
-                                    <input id="input-phone" class="input" type="tel"
-                                        placeholder="Enter your phone number" value="{{ user_info.phone }}">
-                                </p>
-                            </div>
-
-                            <div class="field">
-                                <label for="input-address" class="label">Address</label>
-                                <p class="control">
-                                    <input id="input-address" class="input" type="text" placeholder="Enter your address"
-                                        value="{{ user_info.alamat }}">
-                                </p>
-                            </div>
-
-                            <nav class="level is-mobile">
-                                <div class="level-left">
-                                    <div class="level-item">
-                                        <a class="button is-sparta is-black" onclick="update_profile()">
-                                            Save
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="level-right">
-                                    <div class="level-item">
-                                        <a class="button is-sparta is-black"
-                                            onclick="$('#modal-edit').removeClass('is-active')">
-                                            Cancel
-                                        </a>
-                                    </div>
-                                </div>
-                            </nav>
-
+        <div class="modal-content">
+            <div class="box">
+                <article class="media">
+                    <div class="media-content">
+                        <div class="field">
+                            <label for="input-name" class="label">Name</label>
+                            <p class="control">
+                                <input id="input-name" class="input" placeholder="Input your name"
+                                    value="{{ user_info.name }}">
+                            </p>
                         </div>
-                    </article>
-                </div>
+
+                        <div class="field">
+                            <label for="input-pic" class="label">Profile picture</label>
+                            <div class="control is-expanded">
+                                <div class="file has-name">
+                                    <label class="file-label" style="width: 100%">
+                                        <input id="input-pic" class="file-input" type="file" name="resume">
+                                        <span class="file-cta">
+                                            <span class="file-icon">
+                                                <i class="fa fa-upload"></i>
+                                            </span>
+                                            <span class="file-label">
+                                                Select a file
+                                            </span>
+                                        </span>
+                                        <span id="file-name" class="file-name" style="width:100%; max-width:100%">
+                                            {{ user_info.profile_pic }}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="input-phone" class="label">Phone Number</label>
+                            <p class="control">
+                                <input id="input-phone" class="input" type="tel" placeholder="Enter your phone number"
+                                    value="{{ user_info.phone }}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label for="input-address" class="label">Address</label>
+                            <p class="control">
+                                <input id="input-address" class="input" type="text" placeholder="Enter your address"
+                                    value="{{ user_info.alamat }}">
+                            </p>
+                        </div>
+
+                        <nav class="level is-mobile">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <a class="button is-sparta is-black" onclick="update_profile()">
+                                        Save
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <a class="button is-sparta is-black"
+                                        onclick="$('#modal-edit').removeClass('is-active')">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+
+                    </div>
+                </article>
             </div>
         </div>
-
-    {% endif %}
-
-    <!-- ========================MODAL EDIT PROFIL========================================== -->
+    </div>
 
 
-
-    <!-- Log Pembelian -->
-    <!-- <div class="purchase-log">
-        {% for purchase in purchases %}
-        {% if purchase.user_id == user_info.id %}
+    <div class="purchase-log">
+        {% for purchase in user_purchases %}
         <div class="purchase-card">
             <h3>Log Pembelian</h3>
+            <p><span class="badge text-bg-danger">{{purchase.status}}</span></p>
             <p>Tanggal: {{ purchase.timestamp }}</p>
             <p>Nama: {{ purchase.fullname }}</p>
             <p>Produk: {{ purchase.artwork_title }}</p>
+            <p>Harga: {{ purchase.harga }}</p>
+            <p>Jumlah: {{ purchase.unit }}</p>
             <p>Total Harga: {{ purchase.total }}</p>
-            <button class="btn btn-primary" onclick="changeStatus(this)">Status: <span id="status_{{ purchase._id }}">{{
-                    purchase.status }}</span></button>
-            <button class="btn btn-success" onclick="confirmPurchase('{{ purchase._id }}')">Konfirmasi</button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Upload bukti pembelian
+            </button>
+
+            <!-- ======================MODAL KONFIRMASI PEMBELIAN============================= -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel"
+                                style="color:white; font-family: 'Playfair Display', serif;">Upload bukti pembelian</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="modalInputImage" class="form-label"
+                                    style="color:white; font-family: 'Playfair Display', serif;">Foto</label>
+                                <input type="file" class="form-control" id="modalInputImage" accept="image/*" required>
+                                <input type="hidden" id="purchases_id" value="{{ purchase._id }}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" onclick="uploadBuktiPembelian()"
+                                class="btn btn-primary">Kirim</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        {% endif %}
-        {% endfor %}
-    </div> -->
+    </div>
+
+
+
 
 
     <!-- Modal Komentar -->
@@ -632,7 +694,8 @@
             <div class="modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header">
-                    <h5 class="modal-title">Tambahkan Komentar</h5>
+                    <h5 class="modal-title" style="color:white; font-family: 'Playfair Display', serif;">Tambahkan
+                        Komentar</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -640,24 +703,32 @@
                 <div class="modal-body">
                     <form id="comment-form">
                         <div class="mb-3">
-                            <label for="comment" class="form-label">Komentar:</label>
-                            <textarea class="form-control" id="comment" rows="3"></textarea>
+                            <input type="hidden" name="artwork_id" value="{{ purchase.artwork_id }}">
+                            <label for="comment" class="form-label"
+                                style="color:white; font-family: 'Playfair Display', serif;">Komentar:</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="rating" class="form-label">Rating:</label>
-                            <div class="rating">
-                                <span class="star" data-rating="1">&#9733;</span>
-                                <span class="star" data-rating="2">&#9733;</span>
-                                <span class="star" data-rating="3">&#9733;</span>
-                                <span class="star" data-rating="4">&#9733;</span>
-                                <span class="star" data-rating="5">&#9733;</span>
-                            </div>
+                            <label for="rating" class="form-label"
+                                style="color:white; font-family: 'Playfair Display', serif;">Rating:</label>
+                            <select class="form-select" id="star">
+                                <option selected value="">-- Select a rating--</option>
+                                <option value="1">⭐</option>
+                                <option value="2">⭐⭐</option>
+                                <option value="3">⭐⭐⭐</option>
+                                <option value="4">⭐⭐⭐⭐</option>
+                                <option value="5">⭐⭐⭐⭐⭐</option>
+                            </select>
                         </div>
+                        <button type="button" class="btn btn-primary" onclick="submitComment()">Kirim</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    {% endfor %}
+
 
 
     <footer class="py-3">

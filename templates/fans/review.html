@@ -30,6 +30,7 @@
 
     <!-- Font Awesome CSS -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    
 
     <!-- JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -47,23 +48,6 @@
             $.removeCookie('mytoken')
             alert('You have been logged out')
             window.location.href = '/'
-        }
-
-        function submitKomentar() {
-            let komentar = $("#komentar").val(); // Mendapatkan nilai dari textarea
-            let review_id = $("#review_id").val(); // Mendapatkan nilai dari textarea
-
-            $.ajax({
-                type: "POST",
-                url: "/add_review", // Route untuk mengirim data
-                data: {
-                    komentar_give: komentar,
-                    review_id: review_id
-                }, // Data yang akan dikirim
-                success: function (response) {
-                    windw.location.href = '/artwork/review'
-                },
-            });
         }
     </script>
 
@@ -95,7 +79,7 @@
         }
 
         /* ============================= CSS CARD ============================= */
-        
+
 
         /* ============================= CSS FOOTER ============================= */
         footer {
@@ -186,21 +170,29 @@
 
     <div class="container mt-4">
         <div class="comments-section">
-            <form method="post" action="/artwork/review">
-                <input type="hidden" name="artwork_id" value="{{ artwork._id }}">
-                <div class="mb-3">
-                    <textarea class="form-control mt-6" style="font-family: 'Poppins', sans-serif;" id="commentText" name="comment_text" rows="2"
-                        placeholder="Add a comment" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Send comment!</button>
-            </form>
-
+            <h1 class="text-center mb-4"
+                style="margin-top: 50px; color:white; font-family: 'Playfair Display', serif; font-size:40px;">USER
+                REVIEW</h1>
             {% for comment in comments %}
             <div class="card mt-3">
                 <div class="card-body">
-                    <h5 class="card-title" style="font-family: 'Playfair Display', serif; font-size:20px;">{{comment.username}}</h5>
+                    <h5 class="card-title" style="font-family: 'Playfair Display', serif; font-size:20px;">
+                        {{comment.username}}</h5>
                     <p class="card-text">{{ comment.comment }}</p>
-                    <h1 class="card-text">{{ comment.timestamp }}</h1>
+                    {% if comment.rating == "5" %}
+                    <h1 class="card-text">&#9733;&#9733;&#9733;&#9733;&#9733;</h1>
+                    {% elif comment.rating == "4" %}
+                    <h1 class="card-text">&#9733;&#9733;&#9733;&#9733;</h1>
+                    {% elif comment.rating == "3" %}
+                    <h1 class="card-text">&#9733;&#9733;&#9733;</h1>
+                    {% elif comment.rating == "2" %}
+                    <h1 class="card-text">&#9733;&#9733;</h1>
+                    {% elif comment.rating == "1" %}
+                    <h1 class="card-text">&#9733;</h1>
+                    {% else %}
+                    <h1 class="card-text">{{ comment.rating }}</h1>
+                    {% endif %}
+                    <h1 class="card-text" style="margin-top: 10px;">{{ comment.timestamp }}</h1>
                 </div>
             </div>
             {% endfor %}

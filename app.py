@@ -195,20 +195,28 @@ def artwork_review():
                 return "Tidak ada artwork dengan ID tersebut"
 
         elif request.method == "POST":
+            data = request.get_json()
+            artwork_id = data.get('artwork_id')
+            comment_text = data.get('comment')
+            rating = data.get('rating')
+            
             current_time = datetime.now()
             formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-            artwork_id = request.form.get("artwork_id")
-            comment_text = request.form.get("comment_text")
+            
             db.comments.insert_one(
                 {
                     "artwork_id": artwork_id,
                     "comment": comment_text,
+                    'rating': rating,
                     "user_id": user_info["_id"],
                     "username": user_info["username"],
                     "timestamp": formatted_time,
                 }
             )
-            return redirect(url_for("artwork_review", id=artwork_id))
+            return jsonify(
+            {"result": "success", "msg": "Review berhasil dikrimkan!"}
+            )
+
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
@@ -244,22 +252,25 @@ def save_order():
     data_order = request.form.to_dict()
     formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     data_order["timestamp"] = formatted_time
+    data_order["status"] = 'PENDING'
+    data_order["bukti"] = ''
+    data_order["bukti_real"] = ''
 
     if "unit" in data_order:
         data_order["unit"] = int(data_order["unit"])
 
     db.purchases.insert_one(data_order)
 
-    unit = data_order.get("unit", 0)
+    unit = data_order.get("unit")
     artwork_id = data_order.get("artwork_id")
     artwork_data = db.artwork.find_one({"_id": ObjectId(artwork_id)})
 
     if artwork_data:
-        stock = artwork_data.get("stock", 0) - unit
+        stock = artwork_data.get("stock") - unit
         print("quantity - artwork_data = ", artwork_data)
 
         # Perbarui nilai 'quantity' di koleksi 'artwork'
-        db.artwork.update_one({}, {"$set": {"stock": stock}})
+        db.artwork.update_one({"_id": ObjectId(artwork_id)}, {"$set": {"stock": stock}})
     return jsonify({"message": "Terima kasih! pembelian berhasil."}), 200
 
 
@@ -657,7 +668,7 @@ def profile(username):
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        status = username == payload.get('id')
+        user_purchases = db.purchases.find({"username": username})
         user_info = db.user_login.find_one(
             {'username': username},
             {'_id': False}
@@ -666,7 +677,7 @@ def profile(username):
         return render_template(
             'fans/profile.html',
             user_info=user_info,
-            status=status
+            user_purchases =user_purchases
         )
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
@@ -703,6 +714,36 @@ def update_profile():
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
 
+@app.route('/upload-bukti', methods=['POST'])
+def save_bukti():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        username = payload.get("id")
+        
+        purchases_id = request.form.get("purchases_id")
+        
+        
+        if "bukti_pembelian" in request.files:
+            file = request.files.get("bukti_pembelian")
+            filename = secure_filename(file.filename)
+            extension = filename.split(".")[-1]
+            file_path = f"admin/bukti/{username}_{purchases_id}.{extension}"
+            file.save("./static/" + file_path)
+            
+            bukti = {
+                'bukti': filename,
+                'bukti_real': file_path
+            }
+            
+            db.purchases.update_one({"_id": ObjectId(purchases_id)}, {"$set": bukti})
+        return jsonify(
+            {"result": "success", "msg": "upload bukti pembelian berhasil!"}
+        )
+        
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
 
 
 
