@@ -644,16 +644,35 @@
         {% for purchase in user_purchases %}
         <div class="purchase-card">
             <h3>Log Pembelian</h3>
-            <p><span class="badge text-bg-danger">{{purchase.status}}</span></p>
+
+            {% if purchase.status == 'PENDING' %}
+                <p><span class="badge text-bg-danger">{{ purchase.status }}</span></p>
+            {% elif purchase.status == 'APPROVE' %}
+                <p><span class="badge text-bg-success">{{ purchase.status }}</span></p>
+            {% endif %}
+
             <p>Tanggal: {{ purchase.timestamp }}</p>
             <p>Nama: {{ purchase.fullname }}</p>
             <p>Produk: {{ purchase.artwork_title }}</p>
             <p>Harga: {{ purchase.harga }}</p>
             <p>Jumlah: {{ purchase.unit }}</p>
             <p>Total Harga: {{ purchase.total }}</p>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Upload bukti pembelian
-            </button>
+
+            {% if purchase.status == 'PENDING' %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    Upload bukti pembelian
+                </button>
+            {% endif %}
+
+            {% if purchase.status == 'APPROVE' %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-comment">
+                    Beri penilaian
+                </button>
+
+                <button type="button" class="btn btn-primary">
+                    KONFIRMASI
+                </button>
+                {% endif %}
         </div>
     </div>
 
