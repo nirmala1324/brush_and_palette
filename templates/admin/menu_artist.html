@@ -227,7 +227,8 @@
                   {% set desc = data.desc %}
                   {% set email = data.email %}
                   {% set bankAcc = data.bank %}
-                  {% set bank = bankAcc.split("(")[0] %}
+                  {% set bankNum = data.bank.split(' (')[0] %}
+                  {% set bank = bankAcc.split('(')[1].split(')')[0] %}
                   <tr id="{{ id }}">
                     <td>{{ id }}</td>
                     <td>
@@ -255,7 +256,7 @@
                         </div>
 
                         <div class="modal-body">
-                          <form action="/admin/artist/edit" method="post" enctype="multipart/form-data">
+                          <form action="{{ url_for('edit_artist') }}" id="formEdit" method="post" enctype="multipart/form-data">
                             <div class="form-group">
                               <label for="editArtistFullname">Nama Lengkap</label>
                               <input type="text" class="form-control" name="editArtistFullname" placeholder="Masukan nama artist" value="{{ fullname }}" />
@@ -279,20 +280,20 @@
                             </div>
                             <div class="form-group">
                               <label for="editArtistAcc">Nomor Rekening</label>
-                              <input type="number" class="form-control" name="editArtistAcc" value="{{ bank }}" placeholder="Masukan nomor rekening artist" />
+                              <input type="number" class="form-control" name="editArtistAcc" value="{{ bankNum }}" placeholder="Masukan nomor rekening artist" />
                               <div class="input-group mb-3 mt-2 mb-5">
                                 <label class="input-group-text" for="editArtistBank">Bank</label>
                                 <select class="form-select " name="editArtistBank">
                                   <option selected disabled>Choose...</option>
-                                  <option value="BRi">BRi</option>
-                                  <option value="Mandyry">Mandyry</option>
-                                  <option value="BCE">BCE</option>
-                                  <option value="BTN">BTN</option>
+                                  <option {% if bank == 'BRi' %}selected{% endif %} value="BRi">BRi</option>
+                                  <option {% if bank == 'Mandyry' %}selected{% endif %} value="Mandyry">Mandyry</option>
+                                  <option {% if bank == 'BCE' %}selected{% endif %} value="BCE">BCE</option>
+                                  <option {% if bank == 'BTN' %}selected{% endif %} value="BTN">BTN</option>
                                 </select>
                               </div>            
                             </div>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-bp">Save changes</button>
+                            <button type="submit" id="submitEdit" class="btn btn-bp">Save changes</button>
                           </form>
                         </div>
                       </div>
@@ -339,28 +340,28 @@
               <!-- Add Artist Form -->
               <div class="form-group">
                 <label for="artistFullname">Nama Lengkap</label>
-                <input type="text" class="form-control" id="artistFullname" placeholder="Masukan nama artist" />
+                <input type="text" class="form-control" id="artistFullname" required placeholder="Masukan nama artist" />
               </div>
               <div class="form-group">
                 <label for="artistPhoto">Foto</label>
                 <div style="display: flex; align-items: center;">
-                  <input type="file" class="form-control-file ml-3" id="artistPhoto" accept="image/*" />
+                  <input type="file" class="form-control-file ml-3" required id="artistPhoto" accept="image/*" />
                 </div>
               </div>
               <div class="form-group">
                 <label for="artistDesc">Deskripsi</label>
-                <textarea class="form-control" id="artistDesc" rows="3" placeholder="Masukan deskripsi artist"></textarea>
+                <textarea class="form-control" id="artistDesc" required rows="3" placeholder="Masukan deskripsi artist"></textarea>
               </div>
               <div class="form-group">
                 <label for="artistEmail">E-mail</label>
-                <input type="email" class="form-control" id="artistEmail" placeholder="Masukan alamat email artist" />
+                <input type="email" class="form-control" required id="artistEmail" placeholder="Masukan alamat email artist" />
               </div>
               <div class="form-group">
                 <label for="artistAcc">Nomor Rekening</label>
                 <input type="number" class="form-control" id="artistAcc"placeholder="Masukan nomor rekening artist" />
                 <div class="input-group mb-3 mt-2 mb-4">
                   <label class="input-group-text" for="artistBank">Bank</label>
-                  <select class="form-select " id="artistBank">
+                  <select class="form-select " id="artistBank" required>
                     <option selected disabled value="">Choose...</option>
                     <option value="BRi">BRi</option>
                     <option value="Mandyry">Mandyry</option>
@@ -451,6 +452,15 @@
           }
         })
       }
+
+      $('#submtEdit').click(function() {
+        event.preventDefault();
+        var formData = new FormData($('#formEdit')[0]);
+
+        // Retrieve the value of a specific field using the get method
+        var emailValue = formData.get('editArtistEmail');
+        console.log('Email:', emailValue);
+      })
       
       // Toggle sidebar on button click
       $('#toggle-btn').click(function () {

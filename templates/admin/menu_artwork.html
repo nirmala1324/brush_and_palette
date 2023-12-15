@@ -261,7 +261,12 @@
                           <form action="/admin/artwork/edit" method="post" enctype="multipart/form-data">
                             <div class="form-group">
                               <label for="artistName">Nama Artist</label>
-                              <input type="text" class="form-control" name="editArtsName" disabled placeholder="Masukan nama artist" value="{{ artist }}" />
+                              <select id="artistName" name="artistName" class="form-control">
+                                <option selected disabled>Pilih ...</option>
+                                {% for fullname in fullnames %}
+                                  <option {% if artist == fullname %}selected{% endif %} value="{{fullname}}">{{ fullname }}</option>
+                                {% endfor %}
+                              </select>
                               <input hidden type="text" name="artworkID" value="{{ id }}" />
                               <input hidden type="text" name="artworkPhoto" value="{{ photo }}" />
                             </div>

@@ -331,11 +331,13 @@ def menu_artwork():
         )
         # Create random ID Artwork 
         artworks = db.artwork.find({})
+        artist = db.artist.find({})
+        fullnames_array = [artst['fullname'] for artst in artist]
         artists = db.artist.find({})
         msg = request.args.get('msg') 
         """ length = 3
         random_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(length)) """
-        return render_template('admin/menu_artwork.html', user_info = user_info, datas = artworks, artists = artists, msg = msg)
+        return render_template('admin/menu_artwork.html', user_info = user_info, datas = artworks, fullnames = fullnames_array, msg = msg, artists = artists)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
     
@@ -469,6 +471,7 @@ def tambah_artwork():
 @app.route('/admin/artwork/edit', methods = ['POST'])
 def edit_artwork():
     artID_receive = request.form['artworkID']
+    artistName_receive = request.form['artistName']
     artTitle_receive = request.form['editArtTitle']
     artDesc_receive = request.form['editArtDesc']
     artPrice_receive = int(request.form['editArtPrice'])
@@ -476,12 +479,16 @@ def edit_artwork():
     artPrevPhoto_receive = request.form['artworkPhoto']
     artNewPhoto_receive = request.files['editArtPhoto']
     prev_file_path = './static/' + artPrevPhoto_receive
+    artist_id = db.artist.find_one({'fullname': artistName_receive}, {'_id': 1})
+    artistID = artist_id['_id']
     # creating document
     new_doc = {
         'title': artTitle_receive,
         'desc': artDesc_receive,
         'price': artPrice_receive,
-        'stock': artStock_receive
+        'stock': artStock_receive,
+        'artist': artistName_receive,
+        'artist_id': artistID
     }
     if artNewPhoto_receive:
         if os.path.exists(prev_file_path):
@@ -526,7 +533,7 @@ def tambah_artist():
         artistEmail_receive = request.form.get('artistEmail_give')
         artistAcc_receive = request.form.get('artistAcc_give')
         artistBank_receive = request.form.get('artistBank_give')
-        bankAccount = artistAcc_receive + '(' + artistBank_receive + ')'
+        bankAccount = artistAcc_receive + ' (' + artistBank_receive + ')'
         # Randomize ID for Artwork
         artistId = "A_" + generate_random_id()
         # Insert data inside new_doc
@@ -576,9 +583,6 @@ def edit_artist():
         'email': artistEmail_receive,
         'bank': artistBank
     }
-    if artistBank_receive:
-        artistBank = artistAcc_receive + ' ('+ artistBank_receive +')'
-        new_doc['bank'] = artistBank
 
     if artistNewPhoto_receive:
         if os.path.exists(prev_file_path):
@@ -591,18 +595,20 @@ def edit_artist():
         file.save('./static/' + file_path)
         new_doc['photo'] = filename
         new_doc['photo_real'] = file_path
+        
     db.artist.update_one(
         {'artist_id' : artistID_receive},
         {'$set': new_doc} # let user know how to do update
     )
-    msg = 'Artwork '+ artistID_receive +' successfully updated'
-    return redirect(url_for('menu_artwork', msg = msg))
+    msg = 'Artist'+ artistID_receive +' successfully updated'
+    return redirect(url_for('menu_artist', msg = msg))
 
 @app.route('/admin/artist/delete', methods = ['POST'])
 def delete_artist():
     artistID = request.form['idDelete']
     photo = request.form['photo']
-    os.remove('./static/' + photo)
+    if os.path.exists(photo):
+            os.remove(photo)
     db.artist.delete_one({'artist_id':artistID})
     msg = 'Artist'+ artistID +' successfully deleted'
     return redirect(url_for('menu_artist', msg = msg))
