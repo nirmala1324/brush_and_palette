@@ -662,7 +662,6 @@ def fans_profile():
         return redirect(url_for("nama_fungsi_lain"))
 
 
-
 @app.route("/update_profile", methods=["POST"])
 def save_img():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
@@ -673,7 +672,6 @@ def save_img():
         phone_receive = request.form["phone_give"]
         alamat_receive = request.form["alamat_give"]
 
-    
         if "file_give" in request.files:
             file = request.files["file_give"]
             if file.filename != "":
@@ -685,7 +683,6 @@ def save_img():
                 profile_pic_path = file_path
             else:
                 profile_pic_path = db.user_login.find_one({"username": username}, {"profile_pic_real": 1})["profile_pic_real"]
-
             
             db.user_login.update_one(
                 {"username": username},
@@ -705,7 +702,6 @@ def save_img():
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("fans/profile"))
-
 
 
 if __name__ == '__main__':
