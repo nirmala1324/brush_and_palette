@@ -313,8 +313,8 @@
                 <div class="col-md-6">
                     <div class="artist-image-box">
                         {% if 'photo' in artist_data %}
-                            <img src="{{ url_for('static', filename='admin/artist/' + artist_data.photo) }}"
-                                class="img-fluid artist-image" alt="{{ artist_data.fullname }} Image">
+                            <img src="{{ url_for('static', filename=artist_data.photo_real) }}"
+                                class="img-fluid artist-image" alt="{{ artist_data.photo_real }} Image">
                         {% else %}
                             <p>No photo available</p>
                         {% endif %}
@@ -325,8 +325,8 @@
                 {% for artwork in artworks %}
                 <div class="col-md-3">
                     <div class="card">
-                        <a href="{{ url_for('static', filename='admin/artwork/' + artwork.photo) }}" data-lightbox="artist-gallery" data-title="{{ artwork.title }}">
-                            <img src="{{ url_for('static', filename='admin/artwork/' + artwork.photo) }}" class="card-img-top" alt="{{ artwork.title }}" />
+                        <a href="{{ url_for('static', filename=artwork.photo_real) }}" data-lightbox="artist-gallery" data-title="{{ artwork.title }}">
+                            <img src="{{ url_for('static', filename=artwork.photo_real) }}" class="card-img-top" alt="{{ artwork.title }}" />
                         </a>
                         <div class="card-body">
                             <h5 class="card-title text-center">{{ artist_data.fullname }}</h5>

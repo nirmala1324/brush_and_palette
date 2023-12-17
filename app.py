@@ -5,10 +5,10 @@ import hashlib
 import uuid
 from bson.objectid import ObjectId
 from datetime import (
-    datetime, # representing and manipulating date and time
+    datetime,  # representing and manipulating date and time
     # representing the difference between two dates or times
     # ( Getting the time difference )
-    timedelta 
+    timedelta
 )
 from werkzeug.utils import secure_filename
 import random
@@ -34,6 +34,7 @@ TOKEN_KEY_FANS = os.environ.get("TOKEN_KEY_FANS")
 
 conn = MongoClient(MONGODB_URI)
 db = conn[DB_NAME]
+
 
 @app.route("/", methods=["GET"])
 def home():
@@ -74,7 +75,8 @@ def sign_up():
     alamat_receive = request.form["address_give"]
     phone_receive = int(request.form["phone_give"])
 
-    password_hash = hashlib.sha256(password_receive.encode("utf-8")).hexdigest()
+    password_hash = hashlib.sha256(
+        password_receive.encode("utf-8")).hexdigest()
 
     doc = {
         "username": username_receive,
@@ -97,7 +99,7 @@ def sign_in():
     username_receive = request.form["username_give"]
     password_receive = request.form["password_give"]
     pw_hash = hashlib.sha256(password_receive.encode("utf-8")).hexdigest()
-    
+
     result = db.user_login.find_one(
         {
             "username": username_receive,
@@ -110,7 +112,7 @@ def sign_in():
             "exp": datetime.utcnow() + timedelta(seconds=60 * 60 * 24),
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-        
+
         return jsonify(
             {
                 "result": "success",
@@ -126,6 +128,8 @@ def sign_in():
         )
 
 # ROUTE ARTWORK
+
+
 @app.route("/artwork", methods=["GET"])
 def get_artwork():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
@@ -213,70 +217,73 @@ def artwork_review():
         return redirect(url_for("login", msg=msg))
 
 # ROUTE BUY ARTWORK
+
+
 @app.route('/artwork/checkout')
 def artwork_checkout():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
-        
+
         artwork_id = request.args.get("id")
         artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
-        
+
         if artwork:
-            return render_template('fans/buy_artwork.html', artwork=artwork, user_info=user_info)        
-            
+            return render_template('fans/buy_artwork.html', artwork=artwork, user_info=user_info)
+
         else:
             return "Tidak ada artwork dengan ID tersebut"
-        
-        
-        
+
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
-    
+
+
 @app.route('/api/save_order', methods=['POST'])
 def save_order():
     data_order = request.form.to_dict()
     formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     data_order['timestamp'] = formatted_time
-    
+
     if 'unit' in data_order:
         data_order['unit'] = int(data_order['unit'])
-        
+
     db.purchases.insert_one(data_order)
-    
+
     unit = data_order.get('unit', 0)
     artwork_id = data_order.get('artwork_id')
     artwork_data = db.artwork.find_one({'_id': ObjectId(artwork_id)})
-    
+
     if artwork_data:
         stock = artwork_data.get('stock', 0) - unit
         print('quantity - artwork_data = ', artwork_data)
-        
+
         # Perbarui nilai 'quantity' di koleksi 'artwork'
         db.artwork.update_one({}, {"$set": {'stock': stock}})
     return jsonify({'message': 'Terima kasih! pembelian berhasil.'}), 200
 
 # ROUTE CHECKOUT DETAIL
+
+
 @app.route("/artwork/checkout/detail", methods=["GET", "POST"])
 def checkout_detail():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
-        
+
         artwork_id = request.args.get("id")
         artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
-        
+
         if artwork:
             purchases = db.purchases.find({
                 "username": user_info['username'],
                 "artwork_id": artwork_id
             }).sort([("_id", -1)]).limit(1)
-            
+
             return render_template('fans/checkout_detail.html', purchases=purchases, user_info=user_info, artwork=artwork)
-            
+
         else:
             return "Tidak ada data pembelian dengan parameter tersebut"
 
@@ -289,10 +296,13 @@ def checkout_detail():
 # RENDER PAGES
 
 # LOGIN ADMIN
+
+
 @app.route('/admin/login')
 def admin_login():
     msg = request.args.get('msg')
-    return render_template('admin/login_admin.html', msg = msg)
+    return render_template('admin/login_admin.html', msg=msg)
+
 
 @app.route('/admin/user')
 def menu_user():
@@ -301,20 +311,20 @@ def menu_user():
         payload = jwt.decode(
             token_receive,
             SECRET_KEY,
-            algorithms = ['HS256']
+            algorithms=['HS256']
         )
-        username = payload.get('id') 
+        username = payload.get('id')
         user_info = db.admin.find_one(
             {'username': username},
             {'_id': False}
         )
-        datas = db.user.find({}, {'_id':False})
+        datas = db.user.find({}, {'_id': False})
         user_data = enumerate(datas, start=1)
-        return render_template('admin/menu_user.html', user_info = user_info, user_data = user_data)
+        return render_template('admin/menu_user.html', user_info=user_info, user_data=user_data)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
-    
-    
+
+
 @app.route('/admin/artwork')
 def menu_artwork():
     token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
@@ -322,25 +332,26 @@ def menu_artwork():
         payload = jwt.decode(
             token_receive,
             SECRET_KEY,
-            algorithms = ['HS256']
+            algorithms=['HS256']
         )
-        username = payload.get('id') 
+        username = payload.get('id')
         user_info = db.admin.find_one(
             {'username': username},
             {'_id': False}
         )
-        # Create random ID Artwork 
+        # Create random ID Artwork
         artworks = db.artwork.find({})
         artist = db.artist.find({})
         fullnames_array = [artst['fullname'] for artst in artist]
         artists = db.artist.find({})
-        msg = request.args.get('msg') 
+        msg = request.args.get('msg')
         """ length = 3
         random_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(length)) """
-        return render_template('admin/menu_artwork.html', user_info = user_info, datas = artworks, fullnames = fullnames_array, msg = msg, artists = artists)
+        return render_template('admin/menu_artwork.html', user_info=user_info, datas=artworks, fullnames=fullnames_array, msg=msg, artists=artists)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
-    
+
+
 @app.route('/admin/artist')
 def menu_artist():
     token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
@@ -348,80 +359,106 @@ def menu_artist():
         payload = jwt.decode(
             token_receive,
             SECRET_KEY,
-            algorithms = ['HS256']
+            algorithms=['HS256']
         )
-        username = payload.get('id') 
+        username = payload.get('id')
         user_info = db.admin.find_one(
             {'username': username},
             {'_id': False}
         )
-        # Create random ID Artwork 
+        # Create random ID Artwork
         artist = db.artist.find({})
-        msg = request.args.get('msg') 
-        return render_template('admin/menu_artist.html', user_info = user_info, datas = artist, msg = msg)
+        msg = request.args.get('msg')
+        return render_template('admin/menu_artist.html', user_info=user_info, datas=artist, msg=msg)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
-    
+
+
+@app.route('/admin/pembelian')
+def menu_pembelian():
+    token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
+    try:
+        payload = jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        username = payload.get('id')
+        user_info = db.admin.find_one(
+            {'username': username},
+            {'_id': False}
+        )
+        # Create random ID Artwork
+        purchases = db.purchases.find({})
+        msg = request.args.get('msg')
+        return render_template('admin/menu_pembelian.html', user_info=user_info, datas=purchases, msg=msg)
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for('admin_login'))
+
 
 @app.route('/admin')
 def admin():
     token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
     # decrypting the important variables' value (TOKEN)
     try:
-        payload = jwt.decode( # translating the token
+        payload = jwt.decode(  # translating the token
             token_receive,
             SECRET_KEY,
-            algorithms = ['HS256']
+            algorithms=['HS256']
         )
         # get the user info and set them as payload
         user_info = db.admin.find_one({'username': payload.get('id')})
-        return render_template('admin/dashboard_admin.html', user_info = user_info)
+        return render_template('admin/dashboard_admin.html', user_info=user_info)
     # handle if the token has expired
     except jwt.ExpiredSignatureError:
         msg = "Your token has expired"
         # redirecting client to login endpoint with 'msg' data
-        return redirect(url_for('admin_login', msg = msg))
+        return redirect(url_for('admin_login', msg=msg))
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
-        return redirect(url_for('admin_login', msg = msg))
-    
+        return redirect(url_for('admin_login', msg=msg))
+
 
 # PROCESSES
 
 @app.route('/admin/loggingin', methods=["POST"])
 def login_process():
-    
+
     username_receive = request.form["username_give"]
     password_receive = request.form["password_give"]
     hashed_pw = hashlib.sha256(password_receive.encode("utf-8")).hexdigest()
-    
+
     result = db.admin.find_one({
         "username": username_receive,
         "password": hashed_pw
     })
-    
+
     if result:
         payload = {
-            "id" : username_receive,
+            "id": username_receive,
             "exp": datetime.utcnow() + timedelta(seconds=60 * 60 * 24),
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-        return jsonify({"result": "success", "token":token})
+        return jsonify({"result": "success", "token": token})
     else:
         return jsonify({
             "result": "fail",
             "msg": "We could not found admin data with that that username/ password combination"
         })
 
+
 def generate_random_id(length=4):
-    random_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
+    random_id = ''.join(random.choice(string.ascii_lowercase)
+                        for _ in range(length))
     return random_id
 
 # TAMBAH ARTWORK
+
+
 @app.route('/tambah_artwork', methods=["POST"])
 def tambah_artwork():
     token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
-    try: 
+    try:
         payload = jwt.decode(
             token_receive,
             SECRET_KEY,
@@ -436,7 +473,8 @@ def tambah_artwork():
         artworkStock_receive = int(request.form.get('artworkStock_give'))
         # Randomize ID for Artwork
         artworkId = "AW_" + generate_random_id()
-        artistName_db = db.artist.find_one({'_id': artist}, {'fullname': 1, '_id': 0})
+        artistName_db = db.artist.find_one(
+            {'_id': artist}, {'fullname': 1, '_id': 0})
         artistName = artistName_db['fullname']
         # Insert data inside new_doc
         new_doc = {
@@ -453,7 +491,8 @@ def tambah_artwork():
             file = request.files.get('artworkPhoto_give')
             filename = secure_filename(file.filename)
             # extract extension file
-            extension = filename.split('.')[-1] # get value split first from the back(?)
+            # get value split first from the back(?)
+            extension = filename.split('.')[-1]
             file_path = f'admin/artwork/{artworkId}.{extension}'
             file.save('./static/' + file_path)
             new_doc['photo'] = filename
@@ -465,10 +504,12 @@ def tambah_artwork():
         })
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = 'You need to log in'
-        return redirect(url_for('admin_login', msg = msg))
-    
+        return redirect(url_for('admin_login', msg=msg))
+
 # EDIT ARTWORK
-@app.route('/admin/artwork/edit', methods = ['POST'])
+
+
+@app.route('/admin/artwork/edit', methods=['POST'])
 def edit_artwork():
     artID_receive = request.form['artworkID']
     artistName_receive = request.form['artistName']
@@ -479,7 +520,8 @@ def edit_artwork():
     artPrevPhoto_receive = request.form['artworkPhoto']
     artNewPhoto_receive = request.files['editArtPhoto']
     prev_file_path = './static/' + artPrevPhoto_receive
-    artist_id = db.artist.find_one({'fullname': artistName_receive}, {'_id': 1})
+    artist_id = db.artist.find_one(
+        {'fullname': artistName_receive}, {'_id': 1})
     artistID = artist_id['_id']
     # creating document
     new_doc = {
@@ -496,32 +538,36 @@ def edit_artwork():
         file = artNewPhoto_receive
         filename = secure_filename(file.filename)
         # extract extension file
-        extension = filename.split('.')[-1] # get value split first from the back(?)
+        # get value split first from the back(?)
+        extension = filename.split('.')[-1]
         file_path = f'admin/artwork/{artID_receive}.{extension}'
         file.save('./static/' + file_path)
         new_doc['photo'] = filename
         new_doc['photo_real'] = file_path
     db.artwork.update_one(
-        {'artwork_id' : artID_receive},
-        {'$set': new_doc} # let user know how to do update
+        {'artwork_id': artID_receive},
+        {'$set': new_doc}  # let user know how to do update
     )
-    msg = 'Artwork '+ artID_receive +' successfully updated'
-    return redirect(url_for('menu_artwork', msg = msg))
+    msg = 'Artwork ' + artID_receive + ' successfully updated'
+    return redirect(url_for('menu_artwork', msg=msg))
 
-@app.route('/admin/artwork/delete', methods = ['POST'])
+
+@app.route('/admin/artwork/delete', methods=['POST'])
 def delete_artwork():
     photo = request.form['photo']
     artworkID = request.form['idDelete']
     os.remove('./static/' + photo)
-    db.artwork.delete_one({'artwork_id':artworkID})
-    msg = 'Artwork '+ artworkID +' successfully deleted'
-    return redirect(url_for('menu_artwork', msg = msg))
+    db.artwork.delete_one({'artwork_id': artworkID})
+    msg = 'Artwork ' + artworkID + ' successfully deleted'
+    return redirect(url_for('menu_artwork', msg=msg))
 
 # TAMBAH ARTWORK
+
+
 @app.route('/tambah_artist', methods=["POST"])
 def tambah_artist():
     token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
-    try: 
+    try:
         payload = jwt.decode(
             token_receive,
             SECRET_KEY,
@@ -549,7 +595,8 @@ def tambah_artist():
             file = request.files.get('artistPhoto_give')
             filename = secure_filename(file.filename)
             # extract extension file
-            extension = filename.split('.')[-1] # get value split first from the back(?)
+            # get value split first from the back(?)
+            extension = filename.split('.')[-1]
             file_path = f'admin/artist/{artistId}.{extension}'
             file.save('./static/' + file_path)
             new_doc['photo'] = filename
@@ -561,10 +608,12 @@ def tambah_artist():
         })
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = 'You need to log in'
-        return redirect(url_for('admin_login', msg = msg))
+        return redirect(url_for('admin_login', msg=msg))
 
 # EDIT ARTIST
-@app.route('/admin/artist/edit', methods = ['POST'])
+
+
+@app.route('/admin/artist/edit', methods=['POST'])
 def edit_artist():
     artistID_receive = request.form['artistID']
     artistFullname_receive = request.form['editArtistFullname']
@@ -572,7 +621,7 @@ def edit_artist():
     artistEmail_receive = request.form['editArtistEmail']
     artistAcc_receive = request.form['editArtistAcc']
     artistBank_receive = request.form['editArtistBank']
-    artistBank = artistAcc_receive + ' ('+ artistBank_receive +')'
+    artistBank = artistAcc_receive + ' (' + artistBank_receive + ')'
     artistPrevPhoto_receive = request.form['artistPhoto']
     artistNewPhoto_receive = request.files['editArtistPhoto']
     prev_file_path = './static/' + artistPrevPhoto_receive
@@ -590,40 +639,54 @@ def edit_artist():
         file = artistNewPhoto_receive
         filename = secure_filename(file.filename)
         # extract extension file
-        extension = filename.split('.')[-1] # get value split first from the back(?)
+        # get value split first from the back(?)
+        extension = filename.split('.')[-1]
         file_path = f'admin/artwork/{artistID_receive}.{extension}'
         file.save('./static/' + file_path)
         new_doc['photo'] = filename
         new_doc['photo_real'] = file_path
-        
-    db.artist.update_one(
-        {'artist_id' : artistID_receive},
-        {'$set': new_doc} # let user know how to do update
-    )
-    msg = 'Artist'+ artistID_receive +' successfully updated'
-    return redirect(url_for('menu_artist', msg = msg))
 
-@app.route('/admin/artist/delete', methods = ['POST'])
+    db.artist.update_one(
+        {'artist_id': artistID_receive},
+        {'$set': new_doc}  # let user know how to do update
+    )
+    msg = 'Artist' + artistID_receive + ' successfully updated'
+    return redirect(url_for('menu_artist', msg=msg))
+
+
+@app.route('/admin/artist/delete', methods=['POST'])
 def delete_artist():
     artistID = request.form['idDelete']
     photo = request.form['photo']
     if os.path.exists(photo):
-            os.remove(photo)
-    db.artist.delete_one({'artist_id':artistID})
-    msg = 'Artist'+ artistID +' successfully deleted'
-    return redirect(url_for('menu_artist', msg = msg))
+        os.remove(photo)
+    db.artist.delete_one({'artist_id': artistID})
+    msg = 'Artist' + artistID + ' successfully deleted'
+    return redirect(url_for('menu_artist', msg=msg))
+
+
+@app.route('/admin/pembayaran/update', methods=['POST'])
+def update_pembelian():
+    purchaseID = request.form['idPembelian']
+    db.purchases.update_one({'purchases_id': purchaseID}, {
+                            "$set": {'status': 'APPROVED'}})
+    msg = 'Pembayaran' + purchaseID + ' sudah berhasil disetujui'
+    return redirect(url_for('menu_pembelian', msg=msg))
 
 # --------------------------------------------------------------------------------
 
 # ARTIST FANS
 
+
 @app.route('/artist')
 def artists():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
 
-    artists_data = list(db.artist.find({}, {'_id': 1, 'fullname': 1, 'photo': 1}))  
+    artists_data = list(db.artist.find(
+        {}, {'_id': 1, 'fullname': 1, 'photo': 1}))
 
     return render_template('fans/artist.html', artists_data=artists_data)
+
 
 @app.route('/artist/<artist_id>')
 def artist_detail(artist_id):
@@ -631,9 +694,11 @@ def artist_detail(artist_id):
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         username = payload["id"]
-        artists_data = list(db.artist.find({}, {'_id': 1, 'fullname': 1}))  
-        artist_data = db.artist.find_one({'_id': ObjectId(artist_id)}, {'_id': 1, 'fullname': 1, 'desc': 1, 'photo': 1})
-        artworks = list(db.artwork.find({'artist_id': ObjectId(artist_id)}, {'photo': 1, 'title': 1, 'price': 1}))
+        artists_data = list(db.artist.find({}, {'_id': 1, 'fullname': 1}))
+        artist_data = db.artist.find_one({'_id': ObjectId(artist_id)}, {
+                                         '_id': 1, 'fullname': 1, 'desc': 1, 'photo': 1})
+        artworks = list(db.artwork.find({'artist_id': ObjectId(artist_id)}, {
+                        'photo_real': 1, 'title': 1, 'price': 1}))
         if artist_data:
             return render_template('fans/artist_detail.html', artist_data=artist_data, artworks=artworks, artists_data=artists_data)
         else:
@@ -642,10 +707,8 @@ def artist_detail(artist_id):
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("login"))
 
-    
-    
 
-##profile
+# profile
 
 @app.route('/fans/profile')
 def fans_profile():
@@ -654,7 +717,7 @@ def fans_profile():
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         username = payload["id"]
         user_info = db.user_login.find_one({"username": username})
-        user_purchases = db.purchases.find({"username": username})  
+        user_purchases = db.purchases.find({"username": username})
 
         return render_template('fans/profile.html', user_login=user_info, user_info=user_info, purchases=user_purchases)
 
@@ -671,6 +734,7 @@ def save_img():
         name_receive = request.form["name_give"]
         phone_receive = request.form["phone_give"]
         alamat_receive = request.form["alamat_give"]
+        userID_receive = ObjectId(request.form["userID_give"])
 
         if "file_give" in request.files:
             file = request.files["file_give"]
@@ -681,21 +745,22 @@ def save_img():
                 file.save(os.path.join("./static/fans/profile", file_path))
 
                 profile_pic_path = file_path
-            else:
-                profile_pic_path = db.user_login.find_one({"username": username}, {"profile_pic_real": 1})["profile_pic_real"]
-            
-            db.user_login.update_one(
-                {"username": username},
-                {
-                    "$set": {
-                        "name": name_receive,
-                        "alamat": alamat_receive,  
-                        "phone": phone_receive,
-                        "profile_pic_real": profile_pic_path
-                    }
-                }
-            )
 
+                db.user_login.update_one(
+                    {"_id": userID_receive},
+                    {
+                        "$set": {
+                            "name": name_receive,
+                            "alamat": alamat_receive,
+                            "phone": phone_receive,
+                            "profile_pic_real": profile_pic_path
+                        }
+                    }
+                )
+            else:
+                profile_pic_path = db.user_login.find_one(
+                    {"username": username}, {"profile_pic_real": 1})["profile_pic_real"]
+        
             return jsonify({"result": "success", "msg": "Profile updated!"})
         else:
             return jsonify({"result": "failed", "msg": "No file provided!"}), 400

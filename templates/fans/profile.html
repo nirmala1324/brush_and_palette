@@ -19,7 +19,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@500&family=Poppins&display=swap"
         rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
 
     <script>
 
@@ -32,36 +35,36 @@
             window.location.href = "/artist/" + artistId;
         }
         $(document).ready(function () {
-            get_posts()
         });
 
         function update_profile() {
-            let username = $("#input-username").val();
-            let name = $("#input-name").val();
-            let phone = $("#input-phone").val();
-            let address = $("#input-address").val(); // Mendapatkan nilai alamat dari input form
-
+            let id = $('#userID').val()
+            let name = $("#id_name").val();
             let file = $("#input-pic")[0].files[0];
+            if (file == undefined){
+                file = ''
+            }
+            let phone = $("#id_phone").val();
+            let address = $("#id_alamat").val();
+            console.log( name, id, phone, file);
 
             let form_data = new FormData();
+            form_data.append("userID_give", id);
             form_data.append("file_give", file);
             form_data.append("name_give", name);
-            form_data.append("username_give", username);
             form_data.append("phone_give", phone);
-            form_data.append("alamat_give", address); // Menambahkan alamat ke dalam FormData
+            form_data.append("alamat_give", address);
 
             $.ajax({
                 type: "POST",
                 url: "/update_profile",
                 data: form_data,
-                enctype: 'multipart/form-data',
                 processData: false,
                 contentType: false,
                 cache: false,
                 success: function (response) {
                     if (response.result === "success") {
                         alert(response.msg);
-                        // Reload halaman setelah update berhasil
                         location.reload();
                     } else {
                         alert("Failed to update profile");
@@ -75,70 +78,69 @@
         }
 
         function sign_out() {
-
             window.location.href = "/login";
         }
+
         function confirmPurchase(purchaseId) {
-            // Ganti status menjadi Sukses
-            document.getElementById('status_' + purchaseId).innerText = 'Sukses';
-
-            // Tampilkan pesan pop-up
-            alert('Konfirmasi sukses!');
-        }
-
-        function changeStatus(button) {
-            // Cek status pada tombol Status
-            var status = button.querySelector('span').innerText;
-
-            // Jika statusnya masih Pending, tampilkan pesan pop-up
-            if (status === 'Pending') {
-                alert('Status masih Pending');
+            document.getElementById(`commentForm_${purchaseId}`).style.display = 'block';
+            const confirmButton = document.getElementById(`confirmBtn_${purchaseId}`);
+            if (confirmButton) {
+                const statusElement = document.getElementById(`status_${purchaseId}`);
+                if (statusElement) {
+                    statusElement.textContent = "Sukses";
+                }
             }
         }
 
-        // Fungsi untuk menampilkan modal komentar
-        function showCommentModal() {
-            $('#modal-comment').modal('show');
+
+        function setRating(purchaseId, rating) {
+            for (let i = 1; i <= 5; i++) {
+                const star = document.getElementById(`star_${purchaseId}_${i}`);
+                if (i <= rating) {
+                    star.style.color = 'yellow';
+                } else {
+                    star.style.color = 'gray';
+                }
+            }
         }
-
-        // Fungsi untuk menyimpan komentar
-        function saveComment() {
-            // Dapatkan nilai komentar dan rating dari form
-            var comment = $('#comment').val();
-            var rating = $('#rating').val();
-
-            // Lakukan sesuatu dengan komentar dan rating yang disimpan
-            // Misalnya, kirim ke backend atau lakukan operasi lainnya
-
-            // Setelah menyimpan, tutup modal
-            $('#modal-comment').modal('hide');
+        function cancelComment(purchaseId) {
+            document.getElementById(`commentForm_${purchaseId}`).style.display = 'none';
         }
+        function saveCommentAndRating(purchaseId) {
+            const comment = document.getElementById(`commentText_${purchaseId}`).value;
+            const rating = getRating(purchaseId);
 
-        // Fungsi untuk mengonfirmasi pembelian dengan menampilkan modal komentar
-        function confirmPurchase(purchaseId) {
-            // Ganti status menjadi Sukses
-            document.getElementById('status_' + purchaseId).innerText = 'Sukses';
+            const data = {
+                purchase_id: purchaseId,
+                comment: comment,
+                rating: rating
+            };
 
-            // Tampilkan pesan pop-up
-            alert('Konfirmasi sukses!');
-
-            // Tampilkan modal komentar
-            showCommentModal();
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const stars = document.querySelectorAll('.star');
-
-            stars.forEach(function (star) {
-                star.addEventListener('click', setRating);
+            $.ajax({
+                type: "POST",
+                url: "/save_comment_rating",
+                data: data,
+                success: function (response) {
+                    alert(response.message);
+                    document.getElementById(`commentForm_${purchaseId}`).style.display = 'none';
+                },
+                error: function (error) {
+                    alert("Failed to save comment and rating");
+                    console.error(error);
+                }
             });
+        }
 
-            function setRating(e) {
-                let clickedStar = e.target;
-                let rating = clickedStar.dataset.rating;
-                alert('Anda memberikan rating: ' + rating);
+        function getRating(purchaseId) {
+            let rating = 0;
+            for (let i = 1; i <= 5; i++) {
+                const star = document.getElementById(`star_${purchaseId}_${i}`);
+                if (star.style.color === 'yellow') {
+                    rating = i;
+                }
             }
-        });
+            return rating;
+        }
 
     </script>
     <style>
@@ -194,7 +196,6 @@
             font-size: 20px;
         }
 
-        /*profile*/
         .hero {
             display: flex;
             justify-content: center;
@@ -352,14 +353,11 @@
 
         .purchase-card {
             width: 50%;
-            /* Atur lebar kartu menjadi 50% dari lebar container */
             padding: 10px;
-            /* Mengurangi padding di dalam kartu */
             background-color: transparent;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin: 10px auto;
-            /* Mengatur margin atas dan bawah, serta secara otomatis akan memusatkan kartu */
             border: 2px solid #fff;
             color: white;
             font-size: 14px;
@@ -420,19 +418,15 @@
         }
 
         .rating {
-            unicode-bidi: bidi-override;
-            direction: rtl;
+            display: flex;
+            align-items: center;
         }
 
-        .rating span.star {
-            font-size: 30px;
+        .star {
+            font-size: 28px;
             cursor: pointer;
-            color: #ccc;
-        }
-
-        .rating span.star:hover,
-        .rating span.star:hover~span.star {
-            color: #ffcc00;
+            margin-right: 5px;
+            color: gray;
         }
     </style>
 </head>
@@ -505,6 +499,7 @@
         </div>
     </section>
 
+
     <div class="d-flex justify-content-center mt-3">
         <a class="button is-sparta" aria-label="edit" data-bs-toggle="modal" data-bs-target="#modal-edit">
             Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
@@ -522,19 +517,11 @@
             <div class="box">
                 <article class="media">
                     <div class="media-content">
-                        <form id="profile-form" enctype="multipart/form-data">
-                            <div class="field">
-                                <label class="label" for="input-username">Username</label>
-                                <p class="control">
-                                    <input id="input-username" class="input" placeholder="Your username"
-                                        value="{{ user_login.username }}" />
-                                </p>
-                            </div>
                             <div class="field">
                                 <label class="label" for="input-name">Name</label>
                                 <p class="control">
-                                    <input id="input-name" class="input" placeholder="Your name"
-                                        value="{{ user_login.name }}" />
+                                    <input id="id_name" class="input" placeholder="Your name"
+                                        value="{{ user_login.name }}" name="name_give" />
                                 </p>
                             </div>
                             <div class="field">
@@ -557,18 +544,17 @@
                             <div class="field">
                                 <label class="label" for="input-phone">Phone</label>
                                 <p class="control">
-                                    <input id="input-phone" class="input" placeholder="Your phone number"
-                                        value="{{ user_login.phone }}" />
+                                    <input id="id_phone" class="input" placeholder="Your phone number"
+                                        value="{{ user_login.phone }}" name="phone_give" />
                                 </p>
                             </div>
                             <div class="field">
                                 <label class="label" for="input-address">Address</label>
                                 <p class="control">
-                                    <textarea id="input-address" class="textarea"
-                                        placeholder="Your address">{{ user_login.alamat }}</textarea>
+                                    <textarea id="id_alamat" class="textarea" placeholder="Your address"
+                                        name="alamat_give">{{ user_login.alamat }}</textarea>
                                 </p>
                             </div>
-
                             <div class="field is-grouped">
                                 <div class="control">
                                     <button class="button is-link" onclick="update_profile()">Update</button>
@@ -576,13 +562,11 @@
                                         onclick='$("#modal-edit").removeClass("is-active")'>Cancel</button>
                                 </div>
                             </div>
-                        </form>
                     </div>
                 </article>
             </div>
         </div>
     </div>
-
 
     <!-- Log Pembelian -->
     <div class="purchase-log">
@@ -594,50 +578,38 @@
             <p>Nama: {{ purchase.fullname }}</p>
             <p>Produk: {{ purchase.artwork_title }}</p>
             <p>Total Harga: {{ purchase.total }}</p>
-            <button class="btn btn-primary" onclick="changeStatus(this)">Status: <span id="status_{{ purchase._id }}">{{
-                    purchase.status }}</span></button>
-            <button class="btn btn-success" onclick="confirmPurchase('{{ purchase._id }}')">Konfirmasi</button>
+            <button class="btn btn-primary" onclick="changeStatus(this)">
+                Status: <span id="status_{{ purchase._id }}">{{ purchase.status }}</span>
+            </button>
+            <button class="btn btn-success" id="confirmBtn_{{ purchase._id }}"
+                onclick="confirmPurchase('{{ purchase._id }}')">Konfirmasi</button>
+            <form id="commentForm_{{ purchase._id }}" style="display: none;">
+                <p>Comment:</p>
+                <textarea class="form-control" id="commentText_{{ purchase._id }}" rows="3"
+                    placeholder="Masukkan komentar"></textarea>
+                <p>Rating:</p>
+                <div class="rating" id="rating_{{ purchase._id }}">
+                    <span class="star" id="star_{{ purchase._id }}_1"
+                        onclick="setRating('{{ purchase._id }}', 1)">★</span>
+                    <span class="star" id="star_{{ purchase._id }}_2"
+                        onclick="setRating('{{ purchase._id }}', 2)">★</span>
+                    <span class="star" id="star_{{ purchase._id }}_3"
+                        onclick="setRating('{{ purchase._id }}', 3)">★</span>
+                    <span class="star" id="star_{{ purchase._id }}_4"
+                        onclick="setRating('{{ purchase._id }}', 4)">★</span>
+                    <span class="star" id="star_{{ purchase._id }}_5"
+                        onclick="setRating('{{ purchase._id }}', 5)">★</span>
+                </div>
+                <button class="btn btn-primary" onclick="saveCommentAndRating('{{ purchase._id }}')">Save</button>
+                <button class="btn btn-primary" onclick="cancelComment('{{ purchase._id }}')">Cancel</button>
+            </form>
         </div>
         {% endif %}
         {% endfor %}
     </div>
 
 
-    <!-- Modal Komentar -->
-    <div class="modal" id="modal-comment">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <!-- Modal Header -->
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambahkan Komentar</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <!-- Modal Body -->
-                <div class="modal-body">
-                    <form id="comment-form">
-                        <div class="mb-3">
-                            <label for="comment" class="form-label">Komentar:</label>
-                            <textarea class="form-control" id="comment" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="rating" class="form-label">Rating:</label>
-                            <div class="rating">
-                                <span class="star" data-rating="1">&#9733;</span>
-                                <span class="star" data-rating="2">&#9733;</span>
-                                <span class="star" data-rating="3">&#9733;</span>
-                                <span class="star" data-rating="4">&#9733;</span>
-                                <span class="star" data-rating="5">&#9733;</span>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <footer class="py-3">
+    <footer>
         <div class="container logo-footer">
             <div class="logo-footer">
                 <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
