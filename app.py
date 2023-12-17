@@ -43,7 +43,7 @@ def home():
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
 
-        result = db.artwork.find({})
+        result = db.artwork.find({}).sort('price', -1)
         return render_template("fans/index.html", user_info=user_info, result=result)
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
@@ -127,6 +127,7 @@ def sign_in():
             }
         )
 
+
 # ROUTE ARTWORK
 
 
@@ -137,7 +138,7 @@ def get_artwork():
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
 
-        artwork = db.artwork.find({})
+        artwork = db.artwork.find({}).sort('price', -1)
         return render_template(
             "fans/artwork.html", user_info=user_info, artwork=artwork
         )
@@ -197,29 +198,36 @@ def artwork_review():
                 return "Tidak ada artwork dengan ID tersebut"
 
         elif request.method == "POST":
+            data = request.get_json()
+            artwork_id = data.get('artwork_id')
+            comment_text = data.get('comment')
+            rating = data.get('rating')
+            
             current_time = datetime.now()
             formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-            artwork_id = request.form.get("artwork_id")
-            comment_text = request.form.get("comment_text")
+            
             db.comments.insert_one(
                 {
                     "artwork_id": artwork_id,
                     "comment": comment_text,
+                    'rating': rating,
                     "user_id": user_info["_id"],
                     "username": user_info["username"],
                     "timestamp": formatted_time,
                 }
             )
-            return redirect(url_for("artwork_review", id=artwork_id))
+            return jsonify(
+            {"result": "success", "msg": "Review berhasil dikrimkan!"}
+            )
+
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
 
+
 # ROUTE BUY ARTWORK
-
-
-@app.route('/artwork/checkout')
+@app.route("/artwork/checkout")
 def artwork_checkout():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
@@ -230,7 +238,9 @@ def artwork_checkout():
         artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
 
         if artwork:
-            return render_template('fans/buy_artwork.html', artwork=artwork, user_info=user_info)
+            return render_template(
+                "fans/buy_artwork.html", artwork=artwork, user_info=user_info
+            )
 
         else:
             return "Tidak ada artwork dengan ID tersebut"
@@ -240,28 +250,32 @@ def artwork_checkout():
         return redirect(url_for("login", msg=msg))
 
 
-@app.route('/api/save_order', methods=['POST'])
+@app.route("/api/save_order", methods=["POST"])
 def save_order():
     data_order = request.form.to_dict()
     formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data_order['timestamp'] = formatted_time
+    data_order["timestamp"] = formatted_time
+    data_order["status"] = 'PENDING'
+    data_order["bukti"] = ''
+    data_order["bukti_real"] = ''
 
-    if 'unit' in data_order:
-        data_order['unit'] = int(data_order['unit'])
+    if "unit" in data_order:
+        data_order["unit"] = int(data_order["unit"])
 
     db.purchases.insert_one(data_order)
 
-    unit = data_order.get('unit', 0)
-    artwork_id = data_order.get('artwork_id')
-    artwork_data = db.artwork.find_one({'_id': ObjectId(artwork_id)})
+    unit = data_order.get("unit")
+    artwork_id = data_order.get("artwork_id")
+    artwork_data = db.artwork.find_one({"_id": ObjectId(artwork_id)})
 
     if artwork_data:
-        stock = artwork_data.get('stock', 0) - unit
-        print('quantity - artwork_data = ', artwork_data)
+        stock = artwork_data.get("stock") - unit
+        print("quantity - artwork_data = ", artwork_data)
 
         # Perbarui nilai 'quantity' di koleksi 'artwork'
-        db.artwork.update_one({}, {"$set": {'stock': stock}})
-    return jsonify({'message': 'Terima kasih! pembelian berhasil.'}), 200
+        db.artwork.update_one({"_id": ObjectId(artwork_id)}, {"$set": {"stock": stock}})
+    return jsonify({"message": "Terima kasih! pembelian berhasil."}), 200
+
 
 # ROUTE CHECKOUT DETAIL
 
@@ -277,12 +291,20 @@ def checkout_detail():
         artwork = db.artwork.find_one({"_id": ObjectId(artwork_id)})
 
         if artwork:
-            purchases = db.purchases.find({
-                "username": user_info['username'],
-                "artwork_id": artwork_id
-            }).sort([("_id", -1)]).limit(1)
+            purchases = (
+                db.purchases.find(
+                    {"username": user_info["username"], "artwork_id": artwork_id}
+                )
+                .sort([("_id", -1)])
+                .limit(1)
+            )
 
-            return render_template('fans/checkout_detail.html', purchases=purchases, user_info=user_info, artwork=artwork)
+            return render_template(
+                "fans/checkout_detail.html",
+                purchases=purchases,
+                user_info=user_info,
+                artwork=artwork,
+            )
 
         else:
             return "Tidak ada data pembelian dengan parameter tersebut"
@@ -291,20 +313,19 @@ def checkout_detail():
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
 
+
 # ------------------------------------ ADMIN ---------------------------------------------------
 
 # RENDER PAGES
 
 # LOGIN ADMIN
-
-
-@app.route('/admin/login')
+@app.route("/admin/login")
 def admin_login():
-    msg = request.args.get('msg')
-    return render_template('admin/login_admin.html', msg=msg)
+    msg = request.args.get("msg")
+    return render_template("admin/login_admin.html", msg=msg)
 
 
-@app.route('/admin/user')
+@app.route("/admin/user")
 def menu_user():
     token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
     try:
@@ -396,7 +417,8 @@ def menu_pembelian():
         return redirect(url_for('admin_login'))
 
 
-@app.route('/admin')
+
+@app.route("/admin")
 def admin():
     token_receive = request.cookies.get(TOKEN_KEY_ADMIN)
     # decrypting the important variables' value (TOKEN)
@@ -421,7 +443,8 @@ def admin():
 
 # PROCESSES
 
-@app.route('/admin/loggingin', methods=["POST"])
+
+@app.route("/admin/loggingin", methods=["POST"])
 def login_process():
 
     username_receive = request.form["username_give"]
@@ -441,16 +464,20 @@ def login_process():
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         return jsonify({"result": "success", "token": token})
     else:
-        return jsonify({
-            "result": "fail",
-            "msg": "We could not found admin data with that that username/ password combination"
-        })
+        return jsonify(
+            {
+                "result": "fail",
+                "msg": "We could not found admin data with that that username/ password combination",
+            }
+        )
+
 
 
 def generate_random_id(length=4):
     random_id = ''.join(random.choice(string.ascii_lowercase)
                         for _ in range(length))
     return random_id
+
 
 # TAMBAH ARTWORK
 
@@ -478,17 +505,16 @@ def tambah_artwork():
         artistName = artistName_db['fullname']
         # Insert data inside new_doc
         new_doc = {
-            'artwork_id': artworkId,
-            'artist': artistName,
-            'title': artworkTitle_receive,
-            'artist_id': artist,
-            'desc': artworkDesc_receive,
-            'price': artworkPrice_receive,
-            'stock': artworkStock_receive,
+            "artwork_id": artworkId,
+            "title": artworkTitle_receive,
+            "artist": artist,
+            "desc": artworkDesc_receive,
+            "price": artworkPrice_receive,
+            "stock": artworkStock_receive,
         }
         # Get the photo data
-        if 'artworkPhoto_give' in request.files:
-            file = request.files.get('artworkPhoto_give')
+        if "artworkPhoto_give" in request.files:
+            file = request.files.get("artworkPhoto_give")
             filename = secure_filename(file.filename)
             # extract extension file
             # get value split first from the back(?)
@@ -498,10 +524,12 @@ def tambah_artwork():
             new_doc['photo'] = filename
             new_doc['photo_real'] = file_path
         db.artwork.insert_one(new_doc)
-        return jsonify({
-            'result': 'success',
-            'msg': 'An artwork (' + artworkTitle_receive + ') successfully added!'
-        })
+        return jsonify(
+            {
+                "result": "success",
+                "msg": "An artwork (" + artworkTitle_receive + ") successfully added!",
+            }
+        )
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = 'You need to log in'
         return redirect(url_for('admin_login', msg=msg))
@@ -534,7 +562,7 @@ def edit_artwork():
     }
     if artNewPhoto_receive:
         if os.path.exists(prev_file_path):
-            os.remove('./static/' + artPrevPhoto_receive)
+            os.remove("./static/" + artPrevPhoto_receive)
         file = artNewPhoto_receive
         filename = secure_filename(file.filename)
         # extract extension file
@@ -584,15 +612,15 @@ def tambah_artist():
         artistId = "A_" + generate_random_id()
         # Insert data inside new_doc
         new_doc = {
-            'artist_id': artistId,
-            'fullname': artistFullname_receive,
-            'desc': artistDesc_receive,
-            'email': artistEmail_receive,
-            'bank': bankAccount,
+            "artist_id": artistId,
+            "fullname": artistFullname_receive,
+            "desc": artistDesc_receive,
+            "email": artistEmail_receive,
+            "bank": bankAccount,
         }
         # Get the photo data
-        if 'artistPhoto_give' in request.files:
-            file = request.files.get('artistPhoto_give')
+        if "artistPhoto_give" in request.files:
+            file = request.files.get("artistPhoto_give")
             filename = secure_filename(file.filename)
             # extract extension file
             # get value split first from the back(?)
@@ -602,10 +630,12 @@ def tambah_artist():
             new_doc['photo'] = filename
             new_doc['photo_real'] = file_path
         db.artist.insert_one(new_doc)
-        return jsonify({
-            'result': 'success',
-            'msg': 'An artist (' + artistFullname_receive + ') successfully added!'
-        })
+        return jsonify(
+            {
+                "result": "success",
+                "msg": "An artist (" + artistFullname_receive + ") successfully added!",
+            }
+        )
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = 'You need to log in'
         return redirect(url_for('admin_login', msg=msg))
@@ -627,10 +657,10 @@ def edit_artist():
     prev_file_path = './static/' + artistPrevPhoto_receive
     # creating document
     new_doc = {
-        'fullname': artistFullname_receive,
-        'desc': artistDesc_receive,
-        'email': artistEmail_receive,
-        'bank': artistBank
+        "fullname": artistFullname_receive,
+        "desc": artistDesc_receive,
+        "email": artistEmail_receive,
+        "bank": artistBank,
     }
 
     if artistNewPhoto_receive:
@@ -678,96 +708,142 @@ def update_pembelian():
 # ARTIST FANS
 
 
-@app.route('/artist')
+
+@app.route("/artist")
 def artists():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+        artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1, "photo": 1}))
 
-    artists_data = list(db.artist.find(
-        {}, {'_id': 1, 'fullname': 1, 'photo': 1}))
+        return render_template("fans/artist.html", artists_data=artists_data, user_info=user_info)
+    
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
 
-    return render_template('fans/artist.html', artists_data=artists_data)
 
-
-@app.route('/artist/<artist_id>')
+@app.route("/artist/<artist_id>")
 def artist_detail(artist_id):
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        username = payload["id"]
-        artists_data = list(db.artist.find({}, {'_id': 1, 'fullname': 1}))
-        artist_data = db.artist.find_one({'_id': ObjectId(artist_id)}, {
-                                         '_id': 1, 'fullname': 1, 'desc': 1, 'photo': 1})
-        artworks = list(db.artwork.find({'artist_id': ObjectId(artist_id)}, {
-                        'photo_real': 1, 'title': 1, 'price': 1}))
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+        artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1}))
+        artist_data = db.artist.find_one(
+            {"_id": ObjectId(artist_id)},
+            {"_id": 1, "fullname": 1, "desc": 1, "photo": 1},
+        )
+        artworks = list(
+            db.artwork.find(
+                {"artist_id": ObjectId(artist_id)}, {"photo": 1, "title": 1, "price": 1}
+            )
+        )
         if artist_data:
-            return render_template('fans/artist_detail.html', artist_data=artist_data, artworks=artworks, artists_data=artists_data)
+            return render_template(
+                "fans/artist_detail.html",
+                artist_data=artist_data,
+                artworks=artworks,
+                artists_data=artists_data,
+                user_info=user_info
+            )
         else:
             return "Artist data not found"
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for("login"))
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
 
 
 # profile
 
-@app.route('/fans/profile')
-def fans_profile():
+
+@app.route("/profile/<username>", methods=["GET"])
+def profile(username):
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        username = payload["id"]
-        user_info = db.user_login.find_one({"username": username})
-        user_purchases = db.purchases.find({"username": username})
-
-        return render_template('fans/profile.html', user_login=user_info, user_info=user_info, purchases=user_purchases)
-
-    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for("nama_fungsi_lain"))
-
-
-@app.route("/update_profile", methods=["POST"])
-def save_img():
-    token_receive = request.cookies.get(TOKEN_KEY_FANS)
-    try:
-        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        username = payload["id"]
-        name_receive = request.form["name_give"]
-        phone_receive = request.form["phone_give"]
-        alamat_receive = request.form["alamat_give"]
-        userID_receive = ObjectId(request.form["userID_give"])
-
-        if "file_give" in request.files:
-            file = request.files["file_give"]
-            if file.filename != "":
-                filename = secure_filename(file.filename)
-                extension = filename.split(".")[-1]
-                file_path = f"{username}.{extension}"
-                file.save(os.path.join("./static/fans/profile", file_path))
-
-                profile_pic_path = file_path
-
-                db.user_login.update_one(
-                    {"_id": userID_receive},
-                    {
-                        "$set": {
-                            "name": name_receive,
-                            "alamat": alamat_receive,
-                            "phone": phone_receive,
-                            "profile_pic_real": profile_pic_path
-                        }
-                    }
-                )
-            else:
-                profile_pic_path = db.user_login.find_one(
-                    {"username": username}, {"profile_pic_real": 1})["profile_pic_real"]
+        user_purchases = db.purchases.find({"username": username}).sort('timestamp', -1)
+        user_info = db.user_login.find_one(
+            {'username': username},
+            {'_id': False}
+        )
         
-            return jsonify({"result": "success", "msg": "Profile updated!"})
-        else:
-            return jsonify({"result": "failed", "msg": "No file provided!"}), 400
+        return render_template(
+            'fans/profile.html',
+            user_info=user_info,
+            user_purchases =user_purchases
+        )
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for("fans/profile"))
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+    
+@app.route("/update_profile", methods=['POST'])
+def update_profile():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        username = payload.get("id")
+        name_receive = request.form.get("name_give")
+        phone_receive = request.form.get("phone_give")
+        address_receive = request.form.get("address_give")
+        new_doc = {
+            "name": name_receive,
+            "phone": phone_receive,
+            "alamat": address_receive,
+        }
+        if "file_give" in request.files:
+            file = request.files.get("file_give")
+            filename = secure_filename(file.filename)
+            extension = filename.split(".")[-1]
+            file_path = f"fans/profile/{username}.{extension}"
+            file.save("./static/" + file_path)
+            new_doc["profile_pic"] = filename
+            new_doc["profile_pic_real"] = file_path
+
+        db.user_login.update_one({"username": username}, {"$set": new_doc})
+        return jsonify(
+            {"result": "success", "msg": "Your profile has been updated"}
+        )
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
+
+@app.route('/upload-bukti', methods=['POST'])
+def save_bukti():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        username = payload.get("id")
+        
+        purchases_id = request.form.get("purchases_id")
+        
+        
+        if "bukti_pembelian" in request.files:
+            file = request.files.get("bukti_pembelian")
+            filename = secure_filename(file.filename)
+            extension = filename.split(".")[-1]
+            file_path = f"admin/bukti/{username}_{purchases_id}.{extension}"
+            file.save("./static/" + file_path)
+            
+            bukti = {
+                'bukti': filename,
+                'bukti_real': file_path
+            }
+            
+            db.purchases.update_one({"_id": ObjectId(purchases_id)}, {"$set": bukti})
+        return jsonify(
+            {"result": "success", "msg": "upload bukti pembelian berhasil!"}
+        )
+        
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
 
 
-if __name__ == '__main__':
-    app.run('0.0.0.0', port=5000, debug=True)
+
+if __name__ == "__main__":
+    app.run("0.0.0.0", port=5000, debug=True)

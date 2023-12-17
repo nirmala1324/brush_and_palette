@@ -6,14 +6,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+    </script>
 
+    <!-- bootstrap-icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" />
     <!-- Font Awesome CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 
     <!-- Google Fonts -->
     <link
@@ -25,17 +35,18 @@
         crossorigin="anonymous"></script>
 
     <script>
-
-        function logout() {
-            $.removeCookie('mytoken')
-            alert('You have been logged out')
-            window.location.href = '/'
-        }
-        function showArtistDetail(artistId) {
-            window.location.href = "/artist/" + artistId;
-        }
         $(document).ready(function () {
         });
+
+        function logout() {
+            $.removeCookie('mytoken', {
+                path: '/'
+            })
+            alert('Signed out!')
+            window.location.href = '/login'
+        }
+
+
 
         function update_profile() {
             let id = $('#userID').val()
@@ -55,40 +66,49 @@
             form_data.append("phone_give", phone);
             form_data.append("alamat_give", address);
 
+            // 3. Mengirimkan permintaan AJAX
             $.ajax({
-                type: "POST",
-                url: "/update_profile",
+                type: 'POST',
+                url: '/update_profile',
                 data: form_data,
                 processData: false,
                 contentType: false,
-                cache: false,
                 success: function (response) {
                     if (response.result === "success") {
                         alert(response.msg);
                         location.reload();
+                    } 
+                    // 4. Menangani respons
+                    if (response['result'] === 'success') {
+                        alert(response['msg'])
+                        window.location.reload()
                     } else {
                         alert("Failed to update profile");
                     }
-                },
-                error: function (error) {
-                    alert("Error occurred while updating profile");
-                    console.error(error);
                 }
-            });
+            })
         }
 
         function sign_out() {
             window.location.href = "/login";
+        } 
+        
+        function confirmPurchase(purchaseId) {
+            // Ganti status menjadi Sukses
+            document.getElementById('status_' + purchaseId).innerText = 'Sukses';
+
+            // Tampilkan pesan pop-up
+            alert('Konfirmasi sukses!');
+            showCommentModal();
         }
 
-        function confirmPurchase(purchaseId) {
-            document.getElementById(`commentForm_${purchaseId}`).style.display = 'block';
-            const confirmButton = document.getElementById(`confirmBtn_${purchaseId}`);
-            if (confirmButton) {
-                const statusElement = document.getElementById(`status_${purchaseId}`);
-                if (statusElement) {
-                    statusElement.textContent = "Sukses";
-                }
+        function changeStatus(button) {
+            // Cek status pada tombol Status
+            var status = button.querySelector('span').innerText;
+
+            // Jika statusnya masih Pending, tampilkan pesan pop-up
+            if (status === 'Pending') {
+                alert('Status masih Pending');
             }
         }
 
@@ -103,45 +123,80 @@
                 }
             }
         }
-        function cancelComment(purchaseId) {
-            document.getElementById(`commentForm_${purchaseId}`).style.display = 'none';
-        }
-        function saveCommentAndRating(purchaseId) {
-            const comment = document.getElementById(`commentText_${purchaseId}`).value;
-            const rating = getRating(purchaseId);
 
-            const data = {
-                purchase_id: purchaseId,
+
+        // Fungsi untuk menyimpan komentar
+        function submitComment() {
+            var artworkId = $('[name="artwork_id"]').val(); // Ambil nilai artwork_id
+            var comment = $('#comment').val();
+            var rating = $('#star').val();
+
+            if (!comment) {
+                alert("Silakan tulis komen anda");
+                return;
+            }
+
+            if (!rating) {
+                alert("Silakan pilih rating.");
+                return;
+            }
+
+            var data = {
+                artwork_id: artworkId,
                 comment: comment,
                 rating: rating
             };
 
             $.ajax({
-                type: "POST",
-                url: "/save_comment_rating",
-                data: data,
+                type: 'POST',
+                url: '/artwork/review',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
                 success: function (response) {
-                    alert(response.message);
-                    document.getElementById(`commentForm_${purchaseId}`).style.display = 'none';
+                    if (response['result'] === 'success') {
+                        alert(response['msg'])
+                        window.location.reload()
+                    } else {
+                        alert(response['msg'])
+                    }
                 },
-                error: function (error) {
-                    alert("Failed to save comment and rating");
-                    console.error(error);
-                }
             });
         }
 
-        function getRating(purchaseId) {
-            let rating = 0;
-            for (let i = 1; i <= 5; i++) {
-                const star = document.getElementById(`star_${purchaseId}_${i}`);
-                if (star.style.color === 'yellow') {
-                    rating = i;
-                }
-            }
-            return rating;
-        }
+        function uploadBuktiPembelian() {
+            var modalInputImage = $("#modalInputImage")[0]; // Get the file input element
+            var purchasesId = $("#purchases_id").val()
+            var file = modalInputImage.files[0];
 
+            if (!file) {
+                alert('Tolong upload bukti pembelian!')
+                return
+            }
+
+            var formData = new FormData();
+            formData.append("bukti_pembelian", file);
+            formData.append("purchases_id", purchasesId);
+
+
+            // Send the POST request with AJAX
+            $.ajax({
+                url: "/upload-bukti",
+                method: "POST",
+                data: formData,
+                contentType: false, // To prevent jQuery from encoding the form data
+                processData: false, // To send the formData object as is
+                success: function (data) {
+                    // Handle successful upload response
+                    // You can close the modal, show a success message, etc.
+                    console.log("Bukti pembelian berhasil diupload!");
+                    $("#exampleModal").modal("hide");
+                },
+                error: function (error) {
+                    // Handle error response
+                    console.error("Error uploading bukti pembelian:", error);
+                }
+            });
+        }
     </script>
     <style>
         body {
@@ -475,93 +530,116 @@
         </div>
     </nav>
 
-    <div class="logo-container">
-        <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
-    </div>
 
-    <div class="container">
-        <h2 class="custom-heading">{{ user_login.name }}</h2>
-    </div>
 
-    <section class="hero is-white">
-        <div class="hero-body">
-            <article class="media profile-details">
-                <figure class="media-left" style="align-self: center">
-                    <img class="is-rounded"
-                        src="{{ url_for('static', filename='fans/profile/' + user_login.profile_pic_real) }}" />
-                </figure>
-                <div class="media-content profile-details-text">
 
-                    <strong>@{{ user_info.username }}</strong>
 
+
+    <section class="hero is-white" style="padding-top: 100px;">
+        <div class="hero-body" style="padding-bottom: 1rem; margin: auto; min-width: 400px; text-align: center;">
+            <div class="mb-4">
+                <img class="rounded-circle" src="{{ url_for('static', filename=user_info.profile_pic_real) }}"
+                    alt="Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
+            </div>
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong>{{ user_info.name }}</strong> <small>@{{ user_info.username }}</small>
+                        <br>
+                        <strong>Phone:</strong> {{ user_info.phone }}<br>
+                        <strong>Address:</strong> {{ user_info.alamat }}
+                    </p>
                 </div>
-            </article>
+            </div>
         </div>
     </section>
 
 
     <div class="d-flex justify-content-center mt-3">
-        <a class="button is-sparta" aria-label="edit" data-bs-toggle="modal" data-bs-target="#modal-edit">
+        <a class="button level-item has-text-centered is-sparta" onclick="$('#modal-edit').addClass('is-active')"
+            aria-label="edit">
             Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
                     aria-hidden="true"></i></span>
         </a>
-        <a class="button is-sparta is-outlined ms-2" aria-label="logout" onclick="sign_out()">
+
+        <a class="button is-sparta is-outlined ms-2" aria-label="logout" onclick="logout()">
             Sign Out&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-sign-out"
                     aria-hidden="true"></i></span>
         </a>
     </div>
 
     <div class="modal" id="modal-edit">
-        <div class="modal-background" onclick='$("#modal-edit").removeClass("is-active")'></div>
+        <div class="modal-background" onclick="$('#modal-edit').removeClass('is-active')">
+        </div>
+
         <div class="modal-content">
             <div class="box">
                 <article class="media">
                     <div class="media-content">
-                            <div class="field">
-                                <label class="label" for="input-name">Name</label>
-                                <p class="control">
-                                    <input id="id_name" class="input" placeholder="Your name"
-                                        value="{{ user_login.name }}" name="name_give" />
-                                </p>
-                            </div>
-                            <div class="field">
-                                <label class="label" for="input-pic">Profile Picture</label>
-                                <div class="control is-expanded">
-                                    <div class="file has-name">
-                                        <label class="file-label" style="width: 100%">
-                                            <input id="input-pic" class="file-input" type="file" name="resume" />
-                                            <span class="file-cta">
-                                                <span class="file-icon"><i class="fa fa-upload"></i></span>
-                                                <span class="file-label">Select a file</span>
+                        <div class="field">
+                            <label for="input-name" class="label">Name</label>
+                            <p class="control">
+                                <input id="input-name" class="input" placeholder="Input your name"
+                                    value="{{ user_info.name }}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label for="input-pic" class="label">Profile picture</label>
+                            <div class="control is-expanded">
+                                <div class="file has-name">
+                                    <label class="file-label" style="width: 100%">
+                                        <input id="input-pic" class="file-input" type="file" name="resume">
+                                        <span class="file-cta">
+                                            <span class="file-icon">
+                                                <i class="fa fa-upload"></i>
                                             </span>
-                                            <span id="file-name" class="file-name"
-                                                style="width: 100%; max-width: 100%">{{ user_login.profile_pic_real
-                                                }}</span>
-                                        </label>
-                                    </div>
+                                            <span class="file-label">
+                                                Select a file
+                                            </span>
+                                        </span>
+                                        <span id="file-name" class="file-name" style="width:100%; max-width:100%">
+                                            {{ user_info.profile_pic }}
+                                        </span>
+                                    </label>
                                 </div>
                             </div>
-                            <div class="field">
-                                <label class="label" for="input-phone">Phone</label>
-                                <p class="control">
-                                    <input id="id_phone" class="input" placeholder="Your phone number"
-                                        value="{{ user_login.phone }}" name="phone_give" />
-                                </p>
-                            </div>
-                            <div class="field">
-                                <label class="label" for="input-address">Address</label>
-                                <p class="control">
-                                    <textarea id="id_alamat" class="textarea" placeholder="Your address"
-                                        name="alamat_give">{{ user_login.alamat }}</textarea>
-                                </p>
-                            </div>
-                            <div class="field is-grouped">
-                                <div class="control">
-                                    <button class="button is-link" onclick="update_profile()">Update</button>
-                                    <button class="button is-danger"
-                                        onclick='$("#modal-edit").removeClass("is-active")'>Cancel</button>
+                        </div>
+
+                        <div class="field">
+                            <label for="input-phone" class="label">Phone Number</label>
+                            <p class="control">
+                                <input id="input-phone" class="input" type="tel" placeholder="Enter your phone number"
+                                    value="{{ user_info.phone }}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label for="input-address" class="label">Address</label>
+                            <p class="control">
+                                <input id="input-address" class="input" type="text" placeholder="Enter your address"
+                                    value="{{ user_info.alamat }}">
+                            </p>
+                        </div>
+
+                        <nav class="level is-mobile">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <a class="button is-sparta is-black" onclick="update_profile()">
+                                        Save
+                                    </a>
                                 </div>
                             </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <a class="button is-sparta is-black"
+                                        onclick="$('#modal-edit').removeClass('is-active')">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+
                     </div>
                 </article>
             </div>
@@ -570,13 +648,21 @@
 
     <!-- Log Pembelian -->
     <div class="purchase-log">
-        {% for purchase in purchases %}
-        {% if purchase.user_id == user_login.id %}
+        {% for purchase in user_purchases %}
         <div class="purchase-card">
             <h3>Log Pembelian</h3>
+
+            {% if purchase.status == 'PENDING' %}
+                <p><span class="badge text-bg-danger">{{ purchase.status }}</span></p>
+            {% elif purchase.status == 'APPROVE' %}
+                <p><span class="badge text-bg-success">{{ purchase.status }}</span></p>
+            {% endif %}
+
             <p>Tanggal: {{ purchase.timestamp }}</p>
             <p>Nama: {{ purchase.fullname }}</p>
             <p>Produk: {{ purchase.artwork_title }}</p>
+            <p>Harga: {{ purchase.harga }}</p>
+            <p>Jumlah: {{ purchase.unit }}</p>
             <p>Total Harga: {{ purchase.total }}</p>
             <button class="btn btn-primary" onclick="changeStatus(this)">
                 Status: <span id="status_{{ purchase._id }}">{{ purchase.status }}</span>
@@ -603,13 +689,99 @@
                 <button class="btn btn-primary" onclick="saveCommentAndRating('{{ purchase._id }}')">Save</button>
                 <button class="btn btn-primary" onclick="cancelComment('{{ purchase._id }}')">Cancel</button>
             </form>
+
+            {% if purchase.status == 'PENDING' %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    Upload bukti pembelian
+                </button>
+            {% endif %}
+
+            {% if purchase.status == 'APPROVE' %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-comment">
+                    Beri penilaian
+                </button>
+
+                <button type="button" class="btn btn-primary">
+                    KONFIRMASI
+                </button>
+                {% endif %}
         </div>
-        {% endif %}
-        {% endfor %}
     </div>
 
 
-    <footer>
+    <!-- ======================MODAL UPLOAD BUKTI PEMBELIAN============================= -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel"
+                        style="color:white; font-family: 'Playfair Display', serif;">Upload bukti pembelian</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modalInputImage" class="form-label"
+                            style="color:white; font-family: 'Playfair Display', serif;">Foto</label>
+                        <input type="file" class="form-control" id="modalInputImage" accept="image/*" required>
+                        <input type="hidden" id="purchases_id" value="{{ purchase._id }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" onclick="uploadBuktiPembelian()" class="btn btn-primary">Kirim</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Modal Komentar -->
+    <div class="modal" id="modal-comment">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h5 class="modal-title" style="color:white; font-family: 'Playfair Display', serif;">Tambahkan
+                        Komentar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <form id="comment-form">
+                        <div class="mb-3">
+                            <input type="hidden" name="artwork_id" value="{{ purchase.artwork_id }}">
+                            <label for="comment" class="form-label"
+                                style="color:white; font-family: 'Playfair Display', serif;">Komentar:</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rating" class="form-label"
+                                style="color:white; font-family: 'Playfair Display', serif;">Rating:</label>
+                            <select class="form-select" id="star">
+                                <option selected value="">-- Select a rating--</option>
+                                <option value="1">⭐</option>
+                                <option value="2">⭐⭐</option>
+                                <option value="3">⭐⭐⭐</option>
+                                <option value="4">⭐⭐⭐⭐</option>
+                                <option value="5">⭐⭐⭐⭐⭐</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="submitComment()">Kirim</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endfor %}
+
+
+
+    <footer class="py-3">
         <div class="container logo-footer">
             <div class="logo-footer">
                 <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
