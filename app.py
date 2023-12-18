@@ -845,6 +845,20 @@ def save_bukti():
         return redirect(url_for("login", msg=msg))
 
 
+@app.route('/about-us')
+def about():
+    token_receive = request.cookies.get(TOKEN_KEY_FANS)
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.user_login.find_one({"username": payload.get("id")})
+
+        return render_template(
+            "fans/about_us.html", user_info=user_info
+        )
+
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
+        return redirect(url_for("login", msg=msg))
 
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5000, debug=True)

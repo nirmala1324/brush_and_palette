@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Brush & Palette</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+  </script>
+  <!-- Google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@500&family=Poppins&display=swap"
+    rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding-top: 80px;
+      background-color: black;
+    }
+
+    /* ============================= CSS NAVBAR  ============================= */
+    .logo-img {
+      margin-left: 100px;
+      width: 250px;
+    }
+
+    .fixed-top {
+      position: fixed;
+      width: 100%;
+      top: 0;
+    }
+
+    .custom-navbar-nav {
+      margin-right: 100px;
+      margin-left: auto;
+    }
+
+    .custom-navbar-nav .nav-item {
+      margin-right: 30px;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .about-section {
+      background-color: black;
+      color: white;
+      padding: 50px 20px;
+      text-align: center;
+    }
+
+    .container_header {
+      width: 90%;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100%;
+    }
+
+    .container {
+      width: 90%;
+      margin: 0 auto;
+      top: 0;
+    }
+
+    .about-section h2 {
+      margin-bottom: 20px;
+    }
+
+    .about-section h2 span.about-text {
+      color: #B8860B;
+      font-family: "Times New Roman", serif;
+      font-size: 32px;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding-right: 10px;
+    }
+
+    .about-section h2 span.brush-palette {
+      font-family: serif;
+      font-style: italic;
+      font-size: 36px;
+      font-weight: normal;
+    }
+
+    .about-section p {
+      font-size: 16px;
+      line-height: 1.6;
+      text-align: justify;
+      margin-left: 80px;
+      margin-right: 80px;
+    }
+
+    footer {
+      font-family: 'Playfair Display', serif;
+      background-color: black;
+      color: white;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .footer-links {
+      margin-top: 10px;
+    }
+
+    .footer-links a {
+      color: white;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+
+    .footer-copyright {
+      margin-top: 20px;
+    }
+
+    /* ============================= CSS BODY LOGO  ============================= */
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo-container img {
+      padding-top: 200px;
+      padding-bottom: 200px;
+      width: 300px;
+    }
+
+    /*==========================MEMBER-CARD================================= */
+    .member-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 20px;
+      margin-top: 50px;
+      overflow-x: auto;
+    }
+
+    .card {
+      flex: 0 0 auto;
+      width: 18rem;
+      height: 100%;
+    }
+
+    .card img {
+      height: 250px;
+      object-fit: cover;
+    }
+
+
+
+    .logo-footer {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+
+  .logo-footer img {
+      height: 100px;
+  }
+  </style>
+  <script>
+    {% if msg %}
+      alert("{{ msg }}") 
+    {% endif %}
+  </script>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">
+        <img src="{{ url_for('static', filename='fans/logo.png') }}" alt="Logo" class="logo-img" />
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+        aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav custom-navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/artwork">Artwork</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/artist">Artist</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/{{ user_info.username }}">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/about-us">About</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="logo-container">
+    <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
+  </div>
+
+  <section class="about-section">
+    <div class="container">
+      <h2><span class="about-text">About</span> <span class="brush-palette">Brush & Palette</span></h2>
+      <!--deskripsine pertama gantine nik kene yo, sing bagian <p>-->
+      <p style="font-family: 'Poppins', sans-serif;">
+        Brush & palette – gallery of digital art is a platform with the aim to revolutionize the concept of an art
+        gallery. The focus lies not only on establishing an appreciation for digital art and furthermore for its
+        collection value, which is guaranteed by a limitation of the editions as well as by the certificate of
+        authenticity, but also on supporting emerging artists, especially those who have been underrepresented at the
+        art market so far.
+
+        collection – gallery of digital art functions as a hybrid gallery-model which does not only show the artworks
+        online but also at exhibitions in various spaces and at art fairs. Presenting the works at exhibitions as well
+        as at art fairs allows on the one hand a face-to-face contact between the team of the gallery and recipients or
+        potential buyers and on the other hand an opportunity to working closely together with the artist. Because the
+        main space of the gallery remains the online format, the possibility of staying flexible and trying out new ways
+        of exhibiting art are provided. Furthermore, creating curated exhibitions includes writing about the artworks
+        and therefore linking them to art theory and art history.
+      </p>
+    </div>
+  </section>
+
+  <section class="member-section">
+    <div class="card" style="width: 18rem;">
+      <img src="{{ url_for('static', filename='fans/nirmala.jpeg') }}" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h5 class="card-title" style="font-family: 'Playfair Display', sans-serif; font-weight: bold;">Nirmala
+          Pusparatna
+        </h5>
+
+      </div>
+    </div>
+    <div class="card" style="width: 18rem;">
+      <img src="{{ url_for('static', filename='fans/iqbal.png') }}" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h5 class="card-title" style="font-family: 'Playfair Display', sans-serif; font-weight: bold;">Muhammad Iqbal
+        </h5>
+
+      </div>
+    </div>
+    <div class="card" style="width: 18rem;">
+      <img src="{{ url_for('static', filename='fans/sutra.png') }}" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h5 class="card-title" style="font-family: 'Playfair Display', sans-serif; font-weight: bold;">Sutra Oktaviani
+        </h5>
+
+      </div>
+    </div>
+    <div class="card" style="width: 18rem;">
+      <img src="{{ url_for('static', filename='fans/fariza.png') }}" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h5 class="card-title" style="font-family: 'Playfair Display', sans-serif; font-weight: bold;">Fariza Shegi
+          Pratama
+        </h5>
+
+      </div>
+    </div>
+  </section>
+
+
+  <footer>
+    <hr>
+    <br>
+    <div class="container logo-footer">
+      <div class="logo-footer">
+          <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
+      </div>
+  </div>
+    <div class="footer-links">
+      <br>
+      <a href="/">Home</a>
+      <a href="/artwork">Artwork</a>
+      <a href="/artist">Artist</a>
+      <a href="/about-us">About</a>
+      <br><br>
+    </div>
+    <div class="footer-copyright">
+      @Microsoft All Rights Reserved
+    </div>
+  </footer>
+
+</body>
+
+</html>

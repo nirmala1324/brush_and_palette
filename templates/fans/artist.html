@@ -5,6 +5,8 @@
     <title>Home | Brush & Pallet</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -20,11 +22,15 @@
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@500&family=Poppins&display=swap"
         rel="stylesheet">
     <script>
+        {% if msg %}
+            alert("{{ msg }}") 
+        {% endif %}
         function logout() {
             $.removeCookie('mytoken')
             alert('You have been logged out')
             window.location.href = '/'
         }
+
         function showArtistDetail(artistId) {
             window.location.href = "/artist/" + artistId;
         }
@@ -228,14 +234,12 @@
                                     artist.fullname }}</a></li>
                             {% endfor %}
                         </ul>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Article</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/profile/{{ user_info.username }}">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
+                        <a class="nav-link" href="/about-us">About</a>
                     </li>
                 </ul>
             </div>
@@ -249,7 +253,7 @@
         <div class="title-section">
             <h1 class="all-artists text-center">Artists</h1>
         </div>
-    
+
         <div class="container">
             <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
                 {% for artist in artists_data %}
@@ -271,7 +275,7 @@
             </div>
         </div>
     </div>
-    
+
 
     <footer class="py-3">
         <div class="container logo-footer">
@@ -283,7 +287,7 @@
             <li class="nav-item"><a href="/" class="nav-link px-2">Home</a></li>
             <li class="nav-item"><a href="/artwork" class="nav-link px-2">Artwork</a></li>
             <li class="nav-item"><a href="/artist" class="nav-link px-2">Artists</a></li>
-            <li class="nav-item"><a href="#" class="nav-link px-2">About</a></li>
+            <li class="nav-item"><a href="/about-us" class="nav-link px-2">About</a></li>
         </ul>
         <p class="text-center">©2023 Microsoft All right reserved</p>
     </footer>
