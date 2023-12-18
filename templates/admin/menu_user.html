@@ -221,13 +221,13 @@
               <tbody>
                 {% for i, user in user_data %}
                   {% set username = user.username %}
-                  {% set fullname = user.fullname %}
-                  {% set address = user.address %}
+                  {% set fullname = user.name %}
+                  {% set alamat = user.name %}
                   {% set phone = user.phone %}
-                  {% set photo = user.photo %}
+                  {% set photo = user.profile_pic_real %}
                   <tr id="row{{i}}">
                     <td>{{i}}</td>
-                    <td style="text-align: center;"><img src="{{url_for('static', filename=photo)}}" class="is-rounded" width="60px"></td>
+                    <td style="text-align: center;"><img src="{{url_for('static', filename=photo)}}" class="is-rounded" width="60px" height="60px"></td>
                     <td>{{username}}</td>
                     <td>{{fullname}}</td>
                     <td>{{address}}</td>

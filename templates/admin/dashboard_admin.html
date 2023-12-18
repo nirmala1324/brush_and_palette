@@ -206,25 +206,25 @@
         <div class="col-lg-2">
           <div class="total-data">
             <h4 style="overflow: hidden;">Total Users</h4>
-            <p>1500</p>
+            <p>{{total_user}}</p>
           </div>
         </div>
         <div class="col-lg-2">
           <div class="total-data">
             <h4 style="overflow: hidden;">Total Artworks</h4>
-            <p>500</p>
+            <p>{{total_artwork}}</p>
           </div>
         </div>
         <div class="col-lg-2">
           <div class="total-data">
             <h4 style="overflow: hidden;">Total Artists</h4>
-            <p>200</p>
+            <p>{{total_artist}}</p>
           </div>
         </div>
         <div class="col-lg-2">
           <div class="total-data">
             <h4 style="overflow: hidden;">Total Pembelian</h4>
-            <p>800</p>
+            <p>{{total_pembelian}}</p>
           </div>
         </div>
       </div>
@@ -252,20 +252,15 @@
                     </tr>
                   </thead>
                   <tbody>
+                    {% for purchase in purchases %}
                     <tr>
-                      <td>PURC210001</td>
-                      <td>Ahmad Abdullah</td>
-                      <td>Pertempuran Diponegoro</td>
-                      <td>2</td>
-                      <td>Approved</td>
+                      <td>{{purchase.purchases_id}}</td>
+                      <td>{{purchase.fullname}}</td>
+                      <td>{{purchase.artwork_title}}</td>
+                      <td>{{purchase.unit}}</td>
+                      <td>{{purchase.status}}</td>
                     </tr>
-                    <tr>
-                      <td>PURC210001</td>
-                      <td>Ahmad Abdullah</td>
-                      <td>Pertempuran Diponegoro</td>
-                      <td>2</td>
-                      <td>Approved</td>
-                    </tr>
+                    {% endfor %}
                   </tbody>
                 </table>
               </div>
@@ -324,11 +319,11 @@
       
         // Sample data for the pie chart
         var pieData = {
-          labels: ['Approved', 'Unapproved'],
+          labels: ['Approved', 'Pending'],
           datasets: [
             {
-              data: [75, 25],
-              backgroundColor: ['#36a2eb', '#ff6384']
+              data: [{{total_approved}}, {{total_pending}}],
+              backgroundColor: ['#ad5389', '#3c1053']
             }
           ]
         }

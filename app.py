@@ -36,11 +36,11 @@ conn = MongoClient(MONGODB_URI)
 db = conn[DB_NAME]
 
 
-
 def generate_random_id(length=4):
     random_id = ''.join(random.choice(string.ascii_lowercase)
                         for _ in range(length))
     return random_id
+
 
 @app.route("/", methods=["GET"])
 def home():
@@ -208,10 +208,11 @@ def artwork_review():
             artwork_id = data.get('artwork_id')
             comment_text = data.get('comment')
             rating = data.get('rating')
-            
+            purchases_id = data.get('purchases_id')
+
             current_time = datetime.now()
             formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-            
+
             db.comments.insert_one(
                 {
                     "artwork_id": artwork_id,
@@ -222,10 +223,10 @@ def artwork_review():
                     "timestamp": formatted_time,
                 }
             )
+            db.purchases.update_one({"purchases_id": purchases_id},{"$set": {'shipping_status': 'ARRIVED'}})
             return jsonify(
-            {"result": "success", "msg": "Review berhasil dikrimkan!"}
+                {"result": "success", "msg": "Review berhasil dikrimkan!"}
             )
-
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
@@ -266,6 +267,7 @@ def save_order():
     data_order["purchases_id"] = purchasesId
     data_order["bukti"] = ''
     data_order["bukti_real"] = ''
+    data_order["shipping_status"] = 'SHIPPING'
 
     if "unit" in data_order:
         data_order["unit"] = int(data_order["unit"])
@@ -281,7 +283,8 @@ def save_order():
         print("quantity - artwork_data = ", artwork_data)
 
         # Perbarui nilai 'quantity' di koleksi 'artwork'
-        db.artwork.update_one({"_id": ObjectId(artwork_id)}, {"$set": {"stock": stock}})
+        db.artwork.update_one({"_id": ObjectId(artwork_id)}, {
+                              "$set": {"stock": stock}})
     return jsonify({"message": "Terima kasih! pembelian berhasil."}), 200
 
 
@@ -301,7 +304,8 @@ def checkout_detail():
         if artwork:
             purchases = (
                 db.purchases.find(
-                    {"username": user_info["username"], "artwork_id": artwork_id}
+                    {"username": user_info["username"],
+                        "artwork_id": artwork_id}
                 )
                 .sort([("_id", -1)])
                 .limit(1)
@@ -347,7 +351,7 @@ def menu_user():
             {'username': username},
             {'_id': False}
         )
-        datas = db.user.find({}, {'_id': False})
+        datas = db.user_login.find({}, {'_id': False})
         user_data = enumerate(datas, start=1)
         return render_template('admin/menu_user.html', user_info=user_info, user_data=user_data)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
@@ -421,10 +425,9 @@ def menu_pembelian():
         purchases = db.purchases.find({})
         artwork = db.artwork.find({}, {'title': 1, 'photo_real': 1})
         msg = request.args.get('msg')
-        return render_template('admin/menu_pembelian.html', user_info=user_info, datas=purchases, msg=msg, artworks = artwork)
+        return render_template('admin/menu_pembelian.html', user_info=user_info, datas=purchases, msg=msg, artworks=artwork)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
-
 
 
 @app.route("/admin")
@@ -438,8 +441,24 @@ def admin():
             algorithms=['HS256']
         )
         # get the user info and set them as payload
+        total_user = db.user_login.count_documents({})
+        total_artwork = db.artwork.count_documents({})
+        total_artist = db.artwork.count_documents({})
+        total_pembelian = db.purchases.count_documents({})
+        purchases = db.purchases.find({})
+        total_approved = int(db.purchases.count_documents({'status':'APPROVED'}))
+        total_pending = int(db.purchases.count_documents({'status':'PENDING'}))
         user_info = db.admin.find_one({'username': payload.get('id')})
-        return render_template('admin/dashboard_admin.html', user_info=user_info)
+        return render_template(
+            'admin/dashboard_admin.html', 
+            user_info=user_info, 
+            total_user=total_user, 
+            total_artwork=total_artwork, 
+            total_artist=total_artist, 
+            total_pembelian=total_pembelian, 
+            purchases = purchases,
+            total_approved = total_approved,
+            total_pending = total_pending)
     # handle if the token has expired
     except jwt.ExpiredSignatureError:
         msg = "Your token has expired"
@@ -479,7 +498,6 @@ def login_process():
                 "msg": "We could not found admin data with that that username/ password combination",
             }
         )
-
 
 
 # TAMBAH ARTWORK
@@ -711,17 +729,17 @@ def update_pembelian():
 # ARTIST FANS
 
 
-
 @app.route("/artist")
 def artists():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
-        artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1, "photo_real": 1}))
+        artists_data = list(db.artist.find(
+            {}, {"_id": 1, "fullname": 1, "photo_real": 1}))
 
         return render_template("fans/artist.html", artists_data=artists_data, user_info=user_info)
-    
+
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
@@ -766,22 +784,26 @@ def profile(username):
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        user_purchases = db.purchases.find({"username": username}).sort('timestamp', -1)
+        user_purchases = db.purchases.find(
+            {"username": username}).sort('timestamp', -1)
         user_info = db.user_login.find_one(
             {'username': username},
             {'_id': False}
         )
-        
+        artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1}))
+
         return render_template(
             'fans/profile.html',
             user_info=user_info,
-            user_purchases =user_purchases
+            user_purchases=user_purchases,
+            artists_data=artists_data
         )
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
-        return redirect(url_for("login", msg=msg, user_info = user_info))
-    
+        return redirect(url_for("login", msg=msg, user_info=user_info))
+
+
 @app.route("/update_profile", methods=['POST'])
 def update_profile():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
@@ -791,12 +813,16 @@ def update_profile():
         name_receive = request.form.get("name_give")
         phone_receive = request.form.get("phone_give")
         address_receive = request.form.get("address_give")
+        prev_photo = request.form.get("prev_photo")
+        prev_file_path = './static/' + prev_photo
         new_doc = {
             "name": name_receive,
             "phone": phone_receive,
             "alamat": address_receive,
         }
         if "file_give" in request.files:
+            if os.path.exists(prev_file_path):
+                os.remove(prev_file_path)
             file = request.files.get("file_give")
             filename = secure_filename(file.filename)
             extension = filename.split(".")[-1]
@@ -820,26 +846,27 @@ def save_bukti():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        
+
         purchases_id = request.form.get("purchases_id")
-        
+
         if "bukti_pembelian" in request.files:
             file = request.files.get("bukti_pembelian")
             filename = secure_filename(file.filename)
             extension = filename.split(".")[-1]
             file_path = f"admin/bukti/{purchases_id}.{extension}"
             file.save("./static/" + file_path)
-            
+
             bukti = {
                 'bukti': filename,
                 'bukti_real': file_path
             }
-            
-            db.purchases.update_one({"purchases_id": purchases_id}, {"$set": bukti})
+
+            db.purchases.update_one(
+                {"purchases_id": purchases_id}, {"$set": bukti})
         return jsonify(
             {"result": "success", "msg": "upload bukti pembelian berhasil!"}
         )
-        
+
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
@@ -859,6 +886,7 @@ def about():
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
+
 
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5000, debug=True)

@@ -277,8 +277,8 @@
                                         <!-- Modal Header -->
                                         <div class="modal-header">
                                             <b style="font-size: 25px;">Detail Pembelian - <span
-                                                    style="{% if status == " APPROVE" or "approve" %}color: green;
-                                                    {%else%} color: red; {% endif %}">{{status}}</span></b>
+                                                    style="{% if status == 'APPROVED' %} color: green;
+                                                    {% elif status == 'PENDING' %} color: red; {% endif %}">{{status}}</span></b>
                                             <button type="button" class="close" data-dismiss="modal"
                                                 aria-label="Close"><span aria-hidden="true">&times;</span></button>
                                         </div>
@@ -424,7 +424,7 @@
                                         <div class="modal-body">
                                             <!-- Image -->
                                             <img src="{{ url_for('static', filename = photo) }}"
-                                                class="img-fluid mx-auto" alt="Sample Image">
+                                                class="img-fluid mx-auto mb-3" alt="Sample Image">
 
                                             <button class="btn btn-bp w-100" data-toggle="modal"
                                                 data-target="#approveModal{{id}}">Approve</button>

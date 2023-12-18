@@ -13,7 +13,7 @@
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
-    </script>
+        </script>
 
     <!-- bootstrap-icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -34,14 +34,14 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
         integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous">
-    </script>
+        </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 
     <script>
         {% if msg %}
-            alert("{{ msg }}") 
+        alert("{{ msg }}")
         {% endif %}
-        $(document).ready(function () {});
+        $(document).ready(function () { });
 
         function logout() {
             $.removeCookie('mytoken', {
@@ -57,12 +57,14 @@
             let file = $('#input-pic')[0].files[0]
             let phone = $('#input-phone').val()
             let address = $('#input-address').val()
+            let prev_photo = $('#prev_photo').val()
 
             let form_data = new FormData()
             form_data.append('name_give', name)
             form_data.append('file_give', file)
             form_data.append('phone_give', phone)
             form_data.append('address_give', address)
+            form_data.append('prev_photo', prev_photo)
 
             // 3. Mengirimkan permintaan AJAX
             $.ajax({
@@ -87,8 +89,6 @@
         }
 
         function confirmPurchase(purchaseId) {
-            // Ganti status menjadi Sukses
-            document.getElementById('status_' + purchaseId).innerText = 'Sukses';
 
             // Tampilkan pesan pop-up
             alert('Konfirmasi sukses!');
@@ -113,6 +113,7 @@
         // Fungsi untuk menyimpan komentar
         function submitComment() {
             var artworkId = $('[name="artwork_id"]').val(); // Ambil nilai artwork_id
+            var purchasesId = $('[name="purchases_id"]').val();
             var comment = $('#comment').val();
             var rating = $('#star').val();
 
@@ -129,8 +130,10 @@
             var data = {
                 artwork_id: artworkId,
                 comment: comment,
-                rating: rating
+                rating: rating,
+                purchases_id : purchasesId
             };
+
 
             $.ajax({
                 type: 'POST',
@@ -554,27 +557,28 @@
         </a>
     </div>
 
-    <div class="modal container" id="modal-edit">
+    <div class="modal" id="modal-edit">
         <div class="modal-background" onclick="$('#modal-edit').removeClass('is-active')">
         </div>
 
-        <div class="modal-content">
+        <div class="modal-content has-text-centered">
             <div class="box">
                 <article class="media">
-                    <div class="media-content">
+                    <div class="media-content has-text-centered">
                         <div class="field">
-                            <label for="input-name" class="label">Name</label>
+                            <label for="input-name" style="text-align: left;" class="label ml-3">Name</label>
                             <p class="control">
+                                <input type="text" hidden id="prev_photo" value="{{ user_info.profile_pic_real }}">
                                 <input id="input-name" class="input" placeholder="Input your name"
                                     value="{{ user_info.name }}">
                             </p>
                         </div>
 
                         <div class="field">
-                            <label for="input-pic" class="label">Profile picture</label>
+                            <label for="input-pic" style="text-align: left;" class="label ml-3">Profile picture</label>
                             <div class="control is-expanded">
                                 <div class="file has-name">
-                                    <label class="file-label" style="width: 100%">
+                                    <label class="file-label">
                                         <input id="input-pic" class="file-input" type="file" name="resume">
                                         <span class="file-cta">
                                             <span class="file-icon">
@@ -593,7 +597,7 @@
                         </div>
 
                         <div class="field">
-                            <label for="input-phone" class="label">Phone Number</label>
+                            <label for="input-phone" style="text-align: left" class="label ml-3">Phone Number</label>
                             <p class="control">
                                 <input id="input-phone" class="input" type="tel" placeholder="Enter your phone number"
                                     value="{{ user_info.phone }}">
@@ -601,7 +605,7 @@
                         </div>
 
                         <div class="field">
-                            <label for="input-address" class="label">Address</label>
+                            <label for="input-address" style="text-align: left;" class="label ml-3">Address</label>
                             <p class="control">
                                 <input id="input-address" class="input" type="text" placeholder="Enter your address"
                                     value="{{ user_info.alamat }}">
@@ -625,8 +629,8 @@
                                 </div>
                             </div>
                         </nav>
-
                     </div>
+
                 </article>
             </div>
         </div>
@@ -646,9 +650,9 @@
                     data-bs-target="#collapse_{{ purchase._id }}" aria-expanded="true"
                     aria-controls="collapse_{{ purchase._id }}">
                     {% if purchase.status == 'PENDING' %}
-                    <span class="badge bg-danger">{{ purchase.status }}</span>
+                    <span class="badge bg-danger mr-2">{{ purchase.status }}</span>
                     {% elif purchase.status == 'APPROVED' %}
-                    <span class="badge bg-success">{{ purchase.status }}</span>
+                    <span class="badge bg-success mr-2">{{ purchase.status }}</span>
                     {% endif %}
                     {{ purchase.timestamp }} - {{ purchase.artwork_title }}
                 </button>
@@ -669,28 +673,23 @@
                     </div>
 
                     <div class="d-flex justify-content-center">
+                        {% if purchase.status == 'APPROVED' %}
                         <button style="background-color: purple;" class="btn btn-primary mt-5"
                             onclick="changeStatus(this)">
-                            Status: <span id="status_{{ purchase._id }}">{{ purchase.status }}</span>
+                            Status: <span id="status_{{ purchase._id }}">{{purchase.shipping_status}}</span>
                         </button>
+                        {% if purchase.shipping_status == 'SHIPPING' %}
                         <button style="background-color: purple;" class="btn btn-success mt-5"
                             id="confirmBtn_{{ purchase._id }}"
                             onclick="confirmPurchase('{{ purchase._id }}')">Konfirmasi</button>
+                        {% endif %}
+                        {% endif %}
 
-                        <form id="commentForm_{{ purchase._id }}" style="display: none;">
-                            <!-- Form for comments and ratings -->
-                        </form>
+
                         {% if purchase.status == 'PENDING' %}
                         <button style="background-color: purple;" class="btn btn-primary mt-5" data-bs-toggle="modal"
                             data-bs-target="#exampleModal">
                             Upload bukti pembelian
-                        </button>
-                        {% endif %}
-
-                        {% if purchase.status == 'APPROVED' %}
-                        <button type="button" style="background-color: purple; " class="btn btn-primary mt-5"
-                            data-bs-toggle="modal" data-bs-target="#modal-comment">
-                            Beri penilaian
                         </button>
                         {% endif %}
                     </div>
@@ -739,6 +738,7 @@
                     <div class="modal-body">
                         <form id="comment-form">
                             <div class="mb-3">
+                                <input type="hidden" name="purchases_id" value="{{purchase.purchases_id}}">
                                 <input type="hidden" name="artwork_id" value="{{ purchase.artwork_id }}">
                                 <label for="comment" class="form-label"
                                     style="color:white; font-family: 'Playfair Display', serif;">Komentar:</label>

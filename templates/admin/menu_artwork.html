@@ -421,6 +421,11 @@
         let artworkPrice = $('#artworkPrice').val()
         let artworkStock = $('#artworkStock').val()
         console.log(artistID, artworkTitle, artworkPhoto, artworkDesc, artworkPrice, artworkStock)
+
+        if (artistID === '' || artworkPhoto === '' || artworkDesc === '' || artworkPrice === '' || artworkStock === '' || artworkTitle === '') {
+          alert('All fields must be filled');
+          return false; // Prevent form submission
+        }
       
         let form_data = new FormData()
         form_data.append('artistID_give', artistID)

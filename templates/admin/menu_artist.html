@@ -328,7 +328,7 @@
       <!-- MODAL FORM TAMBAH -->
       <div class="modal" id="addArtistModal" tabindex="-1" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" role="document">
-          <div class="modal-content p-3 py-4">
+          <div class="modal-content p-3 py-4" >
             <div class="modal-header">
               <h5 class="modal-title">Tambah Artwork</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
@@ -337,25 +337,25 @@
               <!-- Add Artist Form -->
               <div class="form-group">
                 <label for="artistFullname">Nama Lengkap</label>
-                <input type="text" class="form-control" id="artistFullname" required placeholder="Masukan nama artist" />
+                <input type="text" class="form-control" id="artistFullname" required placeholder="Masukan nama artist" required />
               </div>
               <div class="form-group">
                 <label for="artistPhoto">Foto</label>
                 <div style="display: flex; align-items: center;">
-                  <input type="file" class="form-control-file ml-3" required id="artistPhoto" accept="image/*" />
+                  <input type="file" class="form-control-file ml-3" required id="artistPhoto" accept="image/*" required />
                 </div>
               </div>
               <div class="form-group">
                 <label for="artistDesc">Deskripsi</label>
-                <textarea class="form-control" id="artistDesc" required rows="3" placeholder="Masukan deskripsi artist"></textarea>
+                <textarea class="form-control" id="artistDesc" required rows="3" placeholder="Masukan deskripsi artist" required></textarea>
               </div>
               <div class="form-group">
                 <label for="artistEmail">E-mail</label>
-                <input type="email" class="form-control" required id="artistEmail" placeholder="Masukan alamat email artist" />
+                <input type="email" class="form-control" required id="artistEmail" placeholder="Masukan alamat email artist" required/>
               </div>
               <div class="form-group">
                 <label for="artistAcc">Nomor Rekening</label>
-                <input type="number" class="form-control" id="artistAcc"placeholder="Masukan nomor rekening artist" />
+                <input type="number" class="form-control" id="artistAcc"placeholder="Masukan nomor rekening artist" required />
                 <div class="input-group mb-3 mt-2 mb-4">
                   <label class="input-group-text" for="artistBank">Bank</label>
                   <select class="form-select " id="artistBank" required>
@@ -423,6 +423,11 @@
         let artistAcc = $('#artistAcc').val()
         let artistBank = $('#artistBank').val()
         console.log(artistFullname, artistPhoto, artistDesc, artistEmail, artistAcc, artistBank)
+
+        if (artistFullname === '' || artistPhoto === '' || artistDesc === '' || artistEmail === '' || artistAcc === '' || artistBank === '') {
+          alert('All fields must be filled');
+          return false; // Prevent form submission
+        }
       
         let form_data = new FormData()
         form_data.append('artistFullname_give', artistFullname)
