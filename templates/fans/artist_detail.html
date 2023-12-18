@@ -13,7 +13,7 @@
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
-    </script>
+        </script>
 
     <!-- bootstrap-icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
@@ -50,7 +50,7 @@
 
     <script>
         {% if msg %}
-            alert("{{ msg }}") 
+        alert("{{ msg }}")
         {% endif %}
         $(document).ready(function () {
             let priceText = $('span strong').text(); // Ambil nilai teks dari elemen span dengan tag strong
@@ -352,14 +352,14 @@
                 <div class="card">
                     <a href="{{ url_for('static', filename=artwork.photo_real) }}" data-lightbox="artist-gallery"
                         data-title="{{ artwork.title }}">
-                        <img src="{{ url_for('static', filename=artwork.photo_real) }}" class="card-img-top"
-                            alt="{{ artwork.title }}" />
+                        <img style="object-fit: cover;" src="{{ url_for('static', filename=artwork.photo_real) }}"
+                            class="card-img-top" alt="{{ artwork.title }}" />
                     </a>
                     <div class="card-body">
                         <h5 class="card-title text-center">{{ artist_data.fullname }}</h5>
                         <p class="text-center">{{ artwork.title }}</p>
                         <div class="mb-3 d-flex justify-content-center align-items-center">
-                            <span><strong>{{ artwork.price }}</strong></span>
+                            <span>{{ artwork.price | string }}</span>
                         </div>
                     </div>
                 </div>
@@ -370,7 +370,6 @@
     {% else %}
     <p>Artist data not found</p>
     {% endif %}
-    </div>
 
     <div class="container row justify-content-center">
         <div class="col-md-4 text-center btn-view-artwork">

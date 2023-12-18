@@ -173,7 +173,7 @@
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    console.log("Bukti pembelian berhasil diupload!");
+                    alert("Bukti pembelian berhasil diupload!");
                     $("#exampleModal").modal("hide");
                 },
                 error: function (xhr, status, error) {
@@ -687,10 +687,12 @@
 
 
                         {% if purchase.status == 'PENDING' %}
-                        <button style="background-color: purple;" class="btn btn-primary mt-5" data-bs-toggle="modal"
+                        {% if purchase.bukti_real%}
+                        <button hidden style="background-color: purple;" class="btn btn-primary mt-5" data-bs-toggle="modal"
                             data-bs-target="#exampleModal">
                             Upload bukti pembelian
                         </button>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>

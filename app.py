@@ -13,6 +13,7 @@ from datetime import (
 from werkzeug.utils import secure_filename
 import random
 import string
+import numpy as np
 
 import os
 from datetime import datetime, timedelta
@@ -92,8 +93,7 @@ def sign_up():
         "phone": phone_receive,
         "profile_name": name_receive,
         "profile_pic": "",
-        "profile_pic_real": "profile_pics/profile_placeholder.png",
-        "profile_info": "",
+        "profile_pic_real": "fans/profile/default_profile.jpg",
     }
     db.user_login.insert_one(doc)
     return jsonify({"result": "success"})
@@ -517,7 +517,7 @@ def tambah_artwork():
         artist = ObjectId(artistID_receive)
         artworkTitle_receive = request.form.get('artworkTitle_give')
         artworkDesc_receive = request.form.get('artworkDesc_give')
-        artworkPrice_receive = int(request.form.get('artworkPrice_give'))
+        artworkPrice_receive = np.int64(request.form.get('artworkPrice_give'))
         artworkStock_receive = int(request.form.get('artworkStock_give'))
         # Randomize ID for Artwork
         artworkId = "AW_" + generate_random_id()
@@ -528,7 +528,8 @@ def tambah_artwork():
         new_doc = {
             "artwork_id": artworkId,
             "title": artworkTitle_receive,
-            "artist": artist,
+            "artist_id": artist,
+            "artist": artistName,
             "desc": artworkDesc_receive,
             "price": artworkPrice_receive,
             "stock": artworkStock_receive,
@@ -564,7 +565,7 @@ def edit_artwork():
     artistName_receive = request.form['artistName']
     artTitle_receive = request.form['editArtTitle']
     artDesc_receive = request.form['editArtDesc']
-    artPrice_receive = int(request.form['editArtPrice'])
+    artPrice_receive = np.int64(request.form['editArtPrice'])
     artStock_receive = int(request.form['editArtStock'])
     artPrevPhoto_receive = request.form['artworkPhoto']
     artNewPhoto_receive = request.files['editArtPhoto']

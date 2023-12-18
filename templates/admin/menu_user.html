@@ -222,7 +222,7 @@
                 {% for i, user in user_data %}
                   {% set username = user.username %}
                   {% set fullname = user.name %}
-                  {% set alamat = user.name %}
+                  {% set alamat = user.alamat %}
                   {% set phone = user.phone %}
                   {% set photo = user.profile_pic_real %}
                   <tr id="row{{i}}">
@@ -230,7 +230,7 @@
                     <td style="text-align: center;"><img src="{{url_for('static', filename=photo)}}" class="is-rounded" width="60px" height="60px"></td>
                     <td>{{username}}</td>
                     <td>{{fullname}}</td>
-                    <td>{{address}}</td>
+                    <td>{{alamat}}</td>
                     <td>{{phone}}</td>
                   </tr>
                 {% endfor %}
