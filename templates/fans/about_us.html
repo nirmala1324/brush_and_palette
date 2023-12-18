@@ -98,6 +98,7 @@
     }
 
     footer {
+      font-family: 'Playfair Display', serif;
       background-color: black;
       color: white;
       text-align: center;
@@ -152,6 +153,20 @@
       height: 250px;
       object-fit: cover;
     }
+
+
+
+    .logo-footer {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+
+  .logo-footer img {
+      height: 100px;
+  }
   </style>
   <script>
     {% if msg %}
@@ -230,15 +245,7 @@
       </div>
     </div>
     <div class="card" style="width: 18rem;">
-      <img src="{{ url_for('static', filename='fans/iqbal.jpg') }}" class="card-img-top" alt="...">
-      <div class="card-body">
-        <h5 class="card-title" style="font-family: 'Playfair Display', sans-serif; font-weight: bold;">Sutra oktaviani
-        </h5>
-
-      </div>
-    </div>
-    <div class="card" style="width: 18rem;">
-      <img src="{{ url_for('static', filename='fans/iqbal.jpg') }}" class="card-img-top" alt="...">
+      <img src="{{ url_for('static', filename='fans/iqbal.png') }}" class="card-img-top" alt="...">
       <div class="card-body">
         <h5 class="card-title" style="font-family: 'Playfair Display', sans-serif; font-weight: bold;">Muhammad Iqbal
         </h5>
@@ -246,7 +253,15 @@
       </div>
     </div>
     <div class="card" style="width: 18rem;">
-      <img src="{{ url_for('static', filename='fans/iqbal.jpg') }}" class="card-img-top" alt="...">
+      <img src="{{ url_for('static', filename='fans/sutra.png') }}" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h5 class="card-title" style="font-family: 'Playfair Display', sans-serif; font-weight: bold;">Sutra Oktaviani
+        </h5>
+
+      </div>
+    </div>
+    <div class="card" style="width: 18rem;">
+      <img src="{{ url_for('static', filename='fans/fariza.png') }}" class="card-img-top" alt="...">
       <div class="card-body">
         <h5 class="card-title" style="font-family: 'Playfair Display', sans-serif; font-weight: bold;">Fariza Shegi
           Pratama
@@ -260,9 +275,11 @@
   <footer>
     <hr>
     <br>
-    <div>
-      Brush<br>&<br>Palette
-    </div>
+    <div class="container logo-footer">
+      <div class="logo-footer">
+          <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
+      </div>
+  </div>
     <div class="footer-links">
       <br>
       <a href="/">Home</a>
