@@ -5,6 +5,8 @@
     <title>Detail | {{artwork.title}} </title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
     <!-- bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -75,8 +77,10 @@
         }
 
         .custom-img {
-            width: calc(100% - 40px); /* Menggunakan calc() untuk menghitung lebar dengan margin 20px di setiap sisi */
-            margin: 20px; /* Memberikan margin 20px di sekeliling gambar */
+            width: calc(100% - 40px);
+            /* Menggunakan calc() untuk menghitung lebar dengan margin 20px di setiap sisi */
+            margin: 20px;
+            /* Memberikan margin 20px di sekeliling gambar */
         }
 
         .card-body h1 {
@@ -130,6 +134,9 @@
     </style>
 
     <script>
+        {% if msg %}
+            alert("{{ msg }}") 
+        {% endif %}
         $(document).ready(function () {
             let priceText = $('span strong').text(); // Ambil nilai teks dari elemen span dengan tag strong
 
@@ -170,13 +177,10 @@
                         <a class="nav-link" href="/artist">Artist</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Article</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="/profile/{{ user_info.username }}">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
+                        <a class="nav-link" href="/about-us">About</a>
                     </li>
                 </ul>
             </div>
@@ -189,8 +193,8 @@
             <div class="card mb-3">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <img src="{{ url_for('static', filename=artwork.photo_real) }}" class="img-fluid rounded-start custom-img"
-                            alt="...">
+                        <img src="{{ url_for('static', filename=artwork.photo_real) }}"
+                            class="img-fluid rounded-start custom-img" alt="...">
                     </div>
 
                     <div class="col-md-8">
@@ -200,7 +204,8 @@
                             <span><strong>{{artwork.price}}</strong></span>
                             {% set artwork_title = artwork.title.replace(' ', '-') %}
                             <p style="margin-top:10px ; margin-bottom: 20px;"><a
-                                    href="/artwork/checkout?id={{ artwork._id }}" class="btn btn-primary" role="button">Buy
+                                    href="/artwork/checkout?id={{ artwork._id }}" class="btn btn-primary"
+                                    role="button">Buy
                                     now</a></p>
                         </div>
                         <p class="card-text">{{artwork.desc}}</p>
@@ -209,7 +214,8 @@
             </div>
             <div class="row justify-content-center" style="margin-top: 50px;">
                 <div class="col-md-12 text-center btn-view-artwork">
-                    <a href="/artwork/review?id={{artwork._id}}" class="btn btn-light btn-lg w-100" role="button">See review</a>
+                    <a href="/artwork/review?id={{artwork._id}}" class="btn btn-light btn-lg w-100" role="button">See
+                        review</a>
                 </div>
             </div>
         </div>

@@ -251,6 +251,7 @@
                             {% set qty = data.unit %}
                             {% set status = data.status %}
                             {% set photo = data.bukti_real%}
+                            {% set photo_artwork = artwork.photo_real%}
                             <tr id="{{ id }}">
                                 <td>{{ id }}</td>
                                 <td>{{ fullname }}</td>
@@ -290,9 +291,12 @@
                                 height: 300px; 
                                 overflow: hidden;
                                 border-radius: 5px;">
+                                
+                                                            {% for artwork in artworks %}
                                                             <img style="width: 100%; height: 100%; object-fit: cover"
-                                                                src="{% if artwork.title == data.artwork_title %}{{ url_for('static', filename = artwork.photo_real) }}{% endif %}"
+                                                                src="{{ url_for('static', filename = artwork.photo_real ) }}"
                                                                 alt="Sample Image" />
+                                                            {% endfor %}
 
                                                         </div>
                                                         <!-- Additional Text Data -->
