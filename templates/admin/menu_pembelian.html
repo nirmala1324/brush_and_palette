@@ -231,7 +231,9 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for artwork in artworks%}
                             {% for data in datas %}
+
                             {% set id_data = data._id %}
                             {% set id = data.purchases_id %}
                             {% set email = data.email %}
@@ -288,9 +290,10 @@
                                 height: 300px; 
                                 overflow: hidden;
                                 border-radius: 5px;">
-                                                            <img style="width: 100%;
-                        height: 100%; object-fit: cover" src="https://i.pinimg.com/236x/dc/0e/a4/dc0ea427b36b0d42012439a55e6a332a.jpg"
-                                                                alt="Sample Image" class="img-fluid" />
+                                                            <img style="width: 100%; height: 100%; object-fit: cover"
+                                                                src="{% if artwork.title == data.artwork_title %}{{ url_for('static', filename = artwork.photo_real) }}{% endif %}"
+                                                                alt="Sample Image" />
+
                                                         </div>
                                                         <!-- Additional Text Data -->
                                                         <div class="p-3 colored-div mt-2">
@@ -443,7 +446,8 @@
                                     </div>
                                 </div>
                             </div>
-                            {% endfor %}
+
+                            {% endfor %}{% endfor %}
                         </tbody>
                     </table>
                 </div>

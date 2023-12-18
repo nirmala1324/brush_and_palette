@@ -36,6 +36,12 @@ conn = MongoClient(MONGODB_URI)
 db = conn[DB_NAME]
 
 
+
+def generate_random_id(length=4):
+    random_id = ''.join(random.choice(string.ascii_lowercase)
+                        for _ in range(length))
+    return random_id
+
 @app.route("/", methods=["GET"])
 def home():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
@@ -252,10 +258,12 @@ def artwork_checkout():
 
 @app.route("/api/save_order", methods=["POST"])
 def save_order():
+    purchasesId = "ORDR_" + generate_random_id()
     data_order = request.form.to_dict()
     formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     data_order["timestamp"] = formatted_time
     data_order["status"] = 'PENDING'
+    data_order["purchases_id"] = purchasesId
     data_order["bukti"] = ''
     data_order["bukti_real"] = ''
 
@@ -411,8 +419,9 @@ def menu_pembelian():
         )
         # Create random ID Artwork
         purchases = db.purchases.find({})
+        artwork = db.artwork.find({}, {'title': 1, 'photo_real': 1})
         msg = request.args.get('msg')
-        return render_template('admin/menu_pembelian.html', user_info=user_info, datas=purchases, msg=msg)
+        return render_template('admin/menu_pembelian.html', user_info=user_info, datas=purchases, msg=msg, artworks = artwork)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for('admin_login'))
 
@@ -471,12 +480,6 @@ def login_process():
             }
         )
 
-
-
-def generate_random_id(length=4):
-    random_id = ''.join(random.choice(string.ascii_lowercase)
-                        for _ in range(length))
-    return random_id
 
 
 # TAMBAH ARTWORK
@@ -715,7 +718,7 @@ def artists():
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.user_login.find_one({"username": payload.get("id")})
-        artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1, "photo": 1}))
+        artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1, "photo_real": 1}))
 
         return render_template("fans/artist.html", artists_data=artists_data, user_info=user_info)
     
@@ -733,11 +736,10 @@ def artist_detail(artist_id):
         artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1}))
         artist_data = db.artist.find_one(
             {"_id": ObjectId(artist_id)},
-            {"_id": 1, "fullname": 1, "desc": 1, "photo": 1},
         )
         artworks = list(
             db.artwork.find(
-                {"artist_id": ObjectId(artist_id)}, {"photo": 1, "title": 1, "price": 1}
+                {"artist_id": ObjectId(artist_id)}
             )
         )
         if artist_data:
@@ -778,7 +780,7 @@ def profile(username):
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
-        return redirect(url_for("login", msg=msg))
+        return redirect(url_for("login", msg=msg, user_info = user_info))
     
 @app.route("/update_profile", methods=['POST'])
 def update_profile():
@@ -812,21 +814,20 @@ def update_profile():
         msg = "Terjadi kesalahan, Silakan login kembali untuk melanjutkan."
         return redirect(url_for("login", msg=msg))
 
+
 @app.route('/upload-bukti', methods=['POST'])
 def save_bukti():
     token_receive = request.cookies.get(TOKEN_KEY_FANS)
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
-        username = payload.get("id")
         
         purchases_id = request.form.get("purchases_id")
-        
         
         if "bukti_pembelian" in request.files:
             file = request.files.get("bukti_pembelian")
             filename = secure_filename(file.filename)
             extension = filename.split(".")[-1]
-            file_path = f"admin/bukti/{username}_{purchases_id}.{extension}"
+            file_path = f"admin/bukti/{purchases_id}.{extension}"
             file.save("./static/" + file_path)
             
             bukti = {
@@ -834,7 +835,7 @@ def save_bukti():
                 'bukti_real': file_path
             }
             
-            db.purchases.update_one({"_id": ObjectId(purchases_id)}, {"$set": bukti})
+            db.purchases.update_one({"purchases_id": purchases_id}, {"$set": bukti})
         return jsonify(
             {"result": "success", "msg": "upload bukti pembelian berhasil!"}
         )

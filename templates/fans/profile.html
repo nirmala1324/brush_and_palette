@@ -11,7 +11,7 @@
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
-    </script>
+        </script>
 
     <!-- bootstrap-icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -47,43 +47,31 @@
         }
 
 
-
         function update_profile() {
-            let id = $('#userID').val()
-            let name = $("#id_name").val();
-            let file = $("#input-pic")[0].files[0];
-            if (file == undefined){
-                file = ''
-            }
-            let phone = $("#id_phone").val();
-            let address = $("#id_alamat").val();
-            console.log( name, id, phone, file);
+            let name = $('#input-name').val()
+            let file = $('#input-pic')[0].files[0]
+            let phone = $('#input-phone').val()
+            let address = $('#input-address').val()
 
-            let form_data = new FormData();
-            form_data.append("userID_give", id);
-            form_data.append("file_give", file);
-            form_data.append("name_give", name);
-            form_data.append("phone_give", phone);
-            form_data.append("alamat_give", address);
+            let form_data = new FormData()
+            form_data.append('name_give', name)
+            form_data.append('file_give', file)
+            form_data.append('phone_give', phone)
+            form_data.append('address_give', address)
 
             // 3. Mengirimkan permintaan AJAX
             $.ajax({
                 type: 'POST',
                 url: '/update_profile',
                 data: form_data,
+                cache: false,
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    if (response.result === "success") {
-                        alert(response.msg);
-                        location.reload();
-                    } 
                     // 4. Menangani respons
                     if (response['result'] === 'success') {
                         alert(response['msg'])
                         window.location.reload()
-                    } else {
-                        alert("Failed to update profile");
                     }
                 }
             })
@@ -91,8 +79,8 @@
 
         function sign_out() {
             window.location.href = "/login";
-        } 
-        
+        }
+
         function confirmPurchase(purchaseId) {
             // Ganti status menjadi Sukses
             document.getElementById('status_' + purchaseId).innerText = 'Sukses';
@@ -112,18 +100,10 @@
             }
         }
 
-
-        function setRating(purchaseId, rating) {
-            for (let i = 1; i <= 5; i++) {
-                const star = document.getElementById(`star_${purchaseId}_${i}`);
-                if (i <= rating) {
-                    star.style.color = 'yellow';
-                } else {
-                    star.style.color = 'gray';
-                }
-            }
+        // Fungsi untuk menampilkan modal komentar
+        function showCommentModal() {
+            $('#modal-comment').modal('show');
         }
-
 
         // Fungsi untuk menyimpan komentar
         function submitComment() {
@@ -164,38 +144,35 @@
         }
 
         function uploadBuktiPembelian() {
-            var modalInputImage = $("#modalInputImage")[0]; // Get the file input element
+            var modalInputImage = $("#modalInputImage")[0].files[0]; // Get the file input element
             var purchasesId = $("#purchases_id").val()
-            var file = modalInputImage.files[0];
 
-            if (!file) {
+            if (!modalInputImage) {
                 alert('Tolong upload bukti pembelian!')
-                return
             }
 
             var formData = new FormData();
-            formData.append("bukti_pembelian", file);
+            formData.append("bukti_pembelian", modalInputImage);
             formData.append("purchases_id", purchasesId);
 
 
             // Send the POST request with AJAX
             $.ajax({
-                url: "/upload-bukti",
                 method: "POST",
+                url: "/upload-bukti",
                 data: formData,
-                contentType: false, // To prevent jQuery from encoding the form data
-                processData: false, // To send the formData object as is
+                cache: false,
+                processData: false,
+                contentType: false,
                 success: function (data) {
-                    // Handle successful upload response
-                    // You can close the modal, show a success message, etc.
                     console.log("Bukti pembelian berhasil diupload!");
                     $("#exampleModal").modal("hide");
                 },
-                error: function (error) {
-                    // Handle error response
+                error: function (xhr, status, error) {
                     console.error("Error uploading bukti pembelian:", error);
                 }
             });
+
         }
     </script>
     <style>
@@ -483,6 +460,15 @@
             margin-right: 5px;
             color: gray;
         }
+
+        .bp-container h1 {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 50px;
+            font-style: normal;
+            margin-top: 150px;
+            margin-bottom: 50px;
+        }
     </style>
 </head>
 
@@ -533,9 +519,7 @@
 
 
 
-
-
-    <section class="hero is-white" style="padding-top: 100px;">
+    <section class="hero is-white" style="padding-top: 80px; padding-bottom: 40px;">
         <div class="hero-body" style="padding-bottom: 1rem; margin: auto; min-width: 400px; text-align: center;">
             <div class="mb-4">
                 <img class="rounded-circle" src="{{ url_for('static', filename=user_info.profile_pic_real) }}"
@@ -555,7 +539,7 @@
     </section>
 
 
-    <div class="d-flex justify-content-center mt-3">
+    <div class="d-flex justify-content-center" style="margin-top: 70px;">
         <a class="button level-item has-text-centered is-sparta" onclick="$('#modal-edit').addClass('is-active')"
             aria-label="edit">
             Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
@@ -568,7 +552,7 @@
         </a>
     </div>
 
-    <div class="modal" id="modal-edit">
+    <div class="modal container" id="modal-edit">
         <div class="modal-background" onclick="$('#modal-edit').removeClass('is-active')">
         </div>
 
@@ -646,138 +630,136 @@
         </div>
     </div>
 
-    <!-- Log Pembelian -->
-    <div class="purchase-log">
+    <h1 class="all-artists text-center container" style="font-size: 40px; color: white; padding-top: 120px; font-family: 'Times New Roman', Times, serif;">Log Pembelian</h1>
+    <hr>
+
+    <!-- Purchase Log Accordion -->
+    <div class="accordion container" style="padding: 50px 10px 50px 10px; max-width: 800px;" id="purchaseLogAccordion">
         {% for purchase in user_purchases %}
-        <div class="purchase-card">
-            <h3>Log Pembelian</h3>
-
-            {% if purchase.status == 'PENDING' %}
-                <p><span class="badge text-bg-danger">{{ purchase.status }}</span></p>
-            {% elif purchase.status == 'APPROVE' %}
-                <p><span class="badge text-bg-success">{{ purchase.status }}</span></p>
-            {% endif %}
-
-            <p>Tanggal: {{ purchase.timestamp }}</p>
-            <p>Nama: {{ purchase.fullname }}</p>
-            <p>Produk: {{ purchase.artwork_title }}</p>
-            <p>Harga: {{ purchase.harga }}</p>
-            <p>Jumlah: {{ purchase.unit }}</p>
-            <p>Total Harga: {{ purchase.total }}</p>
-            <button class="btn btn-primary" onclick="changeStatus(this)">
-                Status: <span id="status_{{ purchase._id }}">{{ purchase.status }}</span>
-            </button>
-            <button class="btn btn-success" id="confirmBtn_{{ purchase._id }}"
-                onclick="confirmPurchase('{{ purchase._id }}')">Konfirmasi</button>
-            <form id="commentForm_{{ purchase._id }}" style="display: none;">
-                <p>Comment:</p>
-                <textarea class="form-control" id="commentText_{{ purchase._id }}" rows="3"
-                    placeholder="Masukkan komentar"></textarea>
-                <p>Rating:</p>
-                <div class="rating" id="rating_{{ purchase._id }}">
-                    <span class="star" id="star_{{ purchase._id }}_1"
-                        onclick="setRating('{{ purchase._id }}', 1)">★</span>
-                    <span class="star" id="star_{{ purchase._id }}_2"
-                        onclick="setRating('{{ purchase._id }}', 2)">★</span>
-                    <span class="star" id="star_{{ purchase._id }}_3"
-                        onclick="setRating('{{ purchase._id }}', 3)">★</span>
-                    <span class="star" id="star_{{ purchase._id }}_4"
-                        onclick="setRating('{{ purchase._id }}', 4)">★</span>
-                    <span class="star" id="star_{{ purchase._id }}_5"
-                        onclick="setRating('{{ purchase._id }}', 5)">★</span>
-                </div>
-                <button class="btn btn-primary" onclick="saveCommentAndRating('{{ purchase._id }}')">Save</button>
-                <button class="btn btn-primary" onclick="cancelComment('{{ purchase._id }}')">Cancel</button>
-            </form>
-
-            {% if purchase.status == 'PENDING' %}
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                    Upload bukti pembelian
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading_{{ purchase._id }}">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse_{{ purchase._id }}" aria-expanded="true"
+                    aria-controls="collapse_{{ purchase._id }}">
+                    {% if purchase.status == 'PENDING' %}
+                    <span class="badge bg-danger">{{ purchase.status }}</span>
+                    {% elif purchase.status == 'APPROVED' %}
+                    <span class="badge bg-success">{{ purchase.status }}</span>
+                    {% endif %}
+                    {{ purchase.timestamp }} - {{ purchase.artwork_title }}
                 </button>
-            {% endif %}
+            </h2>
+            <div id="collapse_{{ purchase._id }}" class="accordion-collapse collapse"
+                aria-labelledby="heading_{{ purchase._id }}" data-bs-parent="#purchaseLogAccordion">
+                <div class="accordion-body">
+                    <div class="d-flex justify-content-center">
+                        <div>
+                            <img src="{{ url_for('static', filename=purchase.photo_real) }}" alt="">
+                        </div>
+                        <div>
+                            <p><strong>Nama:</strong> {{ purchase.fullname }}</p>
+                            <p><strong>Harga:</strong> {{ purchase.harga }}</p>
+                            <p><strong>Jumlah:</strong> {{ purchase.unit }}</p>
+                            <p><strong>Total Harga:</strong> {{ purchase.total }}</p>
+                        </div>
+                    </div>
 
-            {% if purchase.status == 'APPROVE' %}
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-comment">
-                    Beri penilaian
-                </button>
+                    <div class="d-flex justify-content-center">
+                        <button style="background-color: purple;" class="btn btn-primary mt-5"
+                            onclick="changeStatus(this)">
+                            Status: <span id="status_{{ purchase._id }}">{{ purchase.status }}</span>
+                        </button>
+                        <button style="background-color: purple;" class="btn btn-success mt-5"
+                            id="confirmBtn_{{ purchase._id }}"
+                            onclick="confirmPurchase('{{ purchase._id }}')">Konfirmasi</button>
 
-                <button type="button" class="btn btn-primary">
-                    KONFIRMASI
-                </button>
-                {% endif %}
-        </div>
-    </div>
+                        <form id="commentForm_{{ purchase._id }}" style="display: none;">
+                            <!-- Form for comments and ratings -->
+                        </form>
+                        {% if purchase.status == 'PENDING' %}
+                        <button style="background-color: purple;" class="btn btn-primary mt-5" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal">
+                            Upload bukti pembelian
+                        </button>
+                        {% endif %}
 
-
-    <!-- ======================MODAL UPLOAD BUKTI PEMBELIAN============================= -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel"
-                        style="color:white; font-family: 'Playfair Display', serif;">Upload bukti pembelian</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="modalInputImage" class="form-label"
-                            style="color:white; font-family: 'Playfair Display', serif;">Foto</label>
-                        <input type="file" class="form-control" id="modalInputImage" accept="image/*" required>
-                        <input type="hidden" id="purchases_id" value="{{ purchase._id }}">
+                        {% if purchase.status == 'APPROVED' %}
+                        <button type="button" style="background-color: purple; " class="btn btn-primary mt-5"
+                            data-bs-toggle="modal" data-bs-target="#modal-comment">
+                            Beri penilaian
+                        </button>
+                        {% endif %}
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" onclick="uploadBuktiPembelian()" class="btn btn-primary">Kirim</button>
+            </div>
+        </div>
+
+        <!-- ======================MODAL UPLOAD BUKTI PEMBELIAN============================= -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel"
+                            style="color:white; font-family: 'Playfair Display', serif;">Upload bukti pembelian</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="modalInputImage" class="form-label"
+                                style="color:white; font-family: 'Playfair Display', serif;">Foto</label>
+                            <input type="file" class="form-control" id="modalInputImage" accept="image/*" required>
+                            <input hidden id="purchases_id" value="{{ purchase.purchases_id }}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" onclick="uploadBuktiPembelian()" class="btn btn-primary">Kirim</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
+        <!-- Modal Komentar -->
+        <div class="modal" id="modal-comment">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h5 class="modal-title" style="color:white; font-family: 'Playfair Display', serif;">Tambahkan
+                            Komentar</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
 
-
-
-    <!-- Modal Komentar -->
-    <div class="modal" id="modal-comment">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <!-- Modal Header -->
-                <div class="modal-header">
-                    <h5 class="modal-title" style="color:white; font-family: 'Playfair Display', serif;">Tambahkan
-                        Komentar</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <!-- Modal Body -->
-                <div class="modal-body">
-                    <form id="comment-form">
-                        <div class="mb-3">
-                            <input type="hidden" name="artwork_id" value="{{ purchase.artwork_id }}">
-                            <label for="comment" class="form-label"
-                                style="color:white; font-family: 'Playfair Display', serif;">Komentar:</label>
-                            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="rating" class="form-label"
-                                style="color:white; font-family: 'Playfair Display', serif;">Rating:</label>
-                            <select class="form-select" id="star">
-                                <option selected value="">-- Select a rating--</option>
-                                <option value="1">⭐</option>
-                                <option value="2">⭐⭐</option>
-                                <option value="3">⭐⭐⭐</option>
-                                <option value="4">⭐⭐⭐⭐</option>
-                                <option value="5">⭐⭐⭐⭐⭐</option>
-                            </select>
-                        </div>
-                        <button type="button" class="btn btn-primary" onclick="submitComment()">Kirim</button>
-                    </form>
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <form id="comment-form">
+                            <div class="mb-3">
+                                <input type="hidden" name="artwork_id" value="{{ purchase.artwork_id }}">
+                                <label for="comment" class="form-label"
+                                    style="color:white; font-family: 'Playfair Display', serif;">Komentar:</label>
+                                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rating" class="form-label"
+                                    style="color:white; font-family: 'Playfair Display', serif;">Rating:</label>
+                                <select class="form-select" id="star">
+                                    <option selected value="">-- Select a rating--</option>
+                                    <option value="1">⭐</option>
+                                    <option value="2">⭐⭐</option>
+                                    <option value="3">⭐⭐⭐</option>
+                                    <option value="4">⭐⭐⭐⭐</option>
+                                    <option value="5">⭐⭐⭐⭐⭐</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="submitComment()">Kirim</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-
-    {% endfor %}
 
 
 

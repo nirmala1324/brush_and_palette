@@ -150,6 +150,15 @@
             font-size: 20px;
         }
 
+        .bp-container h1 {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 50px;
+            font-style: normal;
+            margin-top: 150px;
+            margin-bottom: 50px;
+        }
+
         /* ============================= CSS FOOTER ============================= */
         footer {
             font-family: 'Playfair Display', serif;
@@ -236,33 +245,33 @@
         <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">
     </div>
 
-    <div class="container py-5">
+    <div class="bp-container py-5">
         <div class="title-section">
-            <h1 class="all-artists">Artists</h1>
+            <h1 class="all-artists text-center">Artists</h1>
         </div>
-
-        <div class="row row-cols-1 row-cols-md-3 g-4 py-5">
-            {% for artist in artists_data %}
-            <div class="col">
-                <div class="card" style="width: 18rem;">
-                    <a href="{{ url_for('artist_detail', artist_id=artist._id) }}">
-                        <img src="{{ url_for('static', filename='admin/artist/' + artist.photo) }}" class="card-img-top"
-                            alt="{{ artist.fullname }}" style="object-fit: cover; aspect-ratio: 1;">
-                    </a>
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <a href="{{ url_for('artist_detail', artist_id=artist._id) }}" class="black-link">{{
-                                artist.fullname }}</a>
-                        </h5>
+    
+        <div class="container">
+            <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
+                {% for artist in artists_data %}
+                <div class="col mb-4">
+                    <div class="card">
+                        <a href="{{ url_for('artist_detail', artist_id=artist._id) }}">
+                            <img src="{{ url_for('static', filename=artist.photo_real) }}" class="card-img-top"
+                                alt="{{ artist.fullname }}" style="object-fit: cover; aspect-ratio: 1;">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{{ url_for('artist_detail', artist_id=artist._id) }}" class="black-link">{{
+                                    artist.fullname }}</a>
+                            </h5>
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
-
-
-
     </div>
+    
 
     <footer class="py-3">
         <div class="container logo-footer">
