@@ -5,6 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Brush&Palette | ADMIN - Menu Pembelian</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
@@ -251,6 +253,7 @@
                             {% set qty = data.unit %}
                             {% set status = data.status %}
                             {% set photo = data.bukti_real%}
+                            {% set photo_artwork = artwork.photo_real%}
                             <tr id="{{ id }}">
                                 <td>{{ id }}</td>
                                 <td>{{ fullname }}</td>
@@ -290,9 +293,12 @@
                                 height: 300px; 
                                 overflow: hidden;
                                 border-radius: 5px;">
+                                
+                                                            {% for artwork in artworks %}
                                                             <img style="width: 100%; height: 100%; object-fit: cover"
-                                                                src="{% if artwork.title == data.artwork_title %}{{ url_for('static', filename = artwork.photo_real) }}{% endif %}"
+                                                                src="{{ url_for('static', filename = artwork.photo_real ) }}"
                                                                 alt="Sample Image" />
+                                                            {% endfor %}
 
                                                         </div>
                                                         <!-- Additional Text Data -->
