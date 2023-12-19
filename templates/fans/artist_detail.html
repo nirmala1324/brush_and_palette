@@ -53,19 +53,19 @@
         alert("{{ msg }}")
         {% endif %}
         $(document).ready(function () {
-            let priceText = $('span strong').text(); // Ambil nilai teks dari elemen span dengan tag strong
+            $('h3 strong').each(function () {
+                let priceText = $(this).text(); // Ambil nilai teks dari elemen strong
+                let price = parseFloat(priceText); // Ubah teks menjadi angka
 
-            // Mengonversi nilai teks menjadi angka
-            let price = parseFloat(priceText);
+                // Ubah nilai angka ke dalam format mata uang Rupiah
+                let formattedPrice = price.toLocaleString('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                });
 
-            // Ubah nilai angka ke dalam format mata uang yang diinginkan (misalnya: IDR)
-            let formattedPrice = price.toLocaleString('id-ID', {
-                style: 'currency',
-                currency: 'IDR'
+                // Gantikan nilai teks di dalam elemen strong dengan format mata uang Rupiah
+                $(this).text(formattedPrice);
             });
-
-            // Gantikan nilai teks di dalam elemen dengan nilai yang telah diformat
-            $('span strong').text(formattedPrice);
         });
 
         function logout() {
@@ -359,7 +359,7 @@
                         <h5 class="card-title text-center">{{ artist_data.fullname }}</h5>
                         <p class="text-center">{{ artwork.title }}</p>
                         <div class="mb-3 d-flex justify-content-center align-items-center">
-                            <span>{{ artwork.price | string }}</span>
+                            <h3><strong>{{ artwork.price}}</strong></h3>
                         </div>
                     </div>
                 </div>

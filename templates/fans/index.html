@@ -289,7 +289,7 @@
 <body>
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">
+            <a class="navbar-brand d-flex justify-content-center align-items-center" href="/">
                 <img src="{{ url_for('static', filename='fans/logo.png') }}" alt="Logo" class="logo-img" />
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
@@ -317,6 +317,7 @@
             </div>
         </div>
     </nav>
+    
 
     <div class="logo-container">
         <img src="{{ url_for('static', filename='fans/logo2.png') }}" alt="Logo Website">

@@ -544,14 +544,14 @@
     </section>
 
 
-    <div class="d-flex justify-content-center" style="margin-top: 70px;">
-        <a class="button level-item has-text-centered is-sparta" onclick="$('#modal-edit').addClass('is-active')"
-            aria-label="edit">
+    <div class="container d-flex justify-content-center" style="margin-top: 70px;">
+        <a class="button level-item has-text-centered is-flex is-align-items-center" onclick="$('#modal-edit').addClass('is-active')"
+            aria-label="edit" style="width: 200px">
             Edit Profile&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
                     aria-hidden="true"></i></span>
         </a>
-
-        <a class="button is-sparta is-outlined ms-2" aria-label="logout" onclick="logout()">
+    
+        <a class="button is-outlined ms-2 is-flex is-align-items-center" aria-label="logout" onclick="logout()" style="width: 200px">
             Sign Out&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-sign-out"
                     aria-hidden="true"></i></span>
         </a>
@@ -615,14 +615,14 @@
                         <nav class="level is-mobile">
                             <div class="level-left">
                                 <div class="level-item">
-                                    <a class="button is-sparta is-black" onclick="update_profile()">
+                                    <a class="button is-black" onclick="update_profile()">
                                         Save
                                     </a>
                                 </div>
                             </div>
                             <div class="level-right">
                                 <div class="level-item">
-                                    <a class="button is-sparta is-black"
+                                    <a class="button is-black"
                                         onclick="$('#modal-edit').removeClass('is-active')">
                                         Cancel
                                     </a>
@@ -686,14 +686,12 @@
                         {% endif %}
 
 
-                        {% if purchase.status == 'PENDING' %}
-                        {% if purchase.bukti_real%}
-                        <button hidden style="background-color: purple;" class="btn btn-primary mt-5" data-bs-toggle="modal"
+                        
+                        <button {% if purchase.bukti_real != '' %} hidden {% endif %} style="background-color: purple;" class="btn btn-primary mt-5" data-bs-toggle="modal"
                             data-bs-target="#exampleModal">
                             Upload bukti pembelian
                         </button>
-                        {% endif %}
-                        {% endif %}
+                        
                     </div>
                 </div>
             </div>

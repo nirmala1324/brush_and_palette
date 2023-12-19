@@ -269,7 +269,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
-            <div class="card mb-3">
+            <div class="card container mb-3">
                 <div class="row g-0">
                     <h1 class="text-center"
                         style="margin-top: 50px; margin-bottom:50px; font-family: 'Poppins', sans-serif; font-weight: bold; font-size:30px;">
@@ -326,6 +326,7 @@
                             <form method="post" id="purchaseForm">
                                 <input type="hidden" name="artwork_id" value="{{ artwork._id }}">
                                 <input type="hidden" name="artwork_title" value="{{ artwork.title}}">
+                                <input type="hidden" name="artwork_photo" value="{{ artwork.photo_real}}">
                                 <input type="hidden" id="harga" name="harga" value="{{ artwork.price}}">
                                 <input type="hidden" id="unit" name="unit" value="">
                                 <input type="hidden" id="total" name="total" value="">

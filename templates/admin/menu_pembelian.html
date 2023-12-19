@@ -233,7 +233,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for artwork in artworks%}
+
                             {% for data in datas %}
                             {% set id_data = data._id %}
                             {% set id = data.purchases_id %}
@@ -252,7 +252,7 @@
                             {% set qty = data.unit %}
                             {% set status = data.status %}
                             {% set photo = data.bukti_real%}
-                            {% set photo_artwork = artwork.photo_real%}
+
                             <tr id="{{ id }}">
                                 <td>{{ id }}</td>
                                 <td>{{ fullname }}</td>
@@ -291,14 +291,11 @@
                                                         <div style=" 
                                 overflow: hidden;
                                 border-radius: 5px;">
-                                
-                                                            {% for artwork in artworks %}
-                                                                {% if artwork.title == artworkTitle %}
-                                                                <img class="w-100" style="width: 100%; height: 100%; object-fit: cover"
-                                                                src="{{ url_for('static', filename = artwork.photo_real ) }}"
+
+                                                            <img class="w-100"
+                                                                style="width: 100%; height: 100%; object-fit: cover"
+                                                                src="{{ url_for('static', filename = data.artwork_photo ) }}"
                                                                 alt="Sample Image" />
-                                                                {% endif %}
-                                                            {% endfor %}
 
                                                         </div>
                                                         <!-- Additional Text Data -->
@@ -453,7 +450,7 @@
                                 </div>
                             </div>
 
-                            {% endfor %}{% endfor %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

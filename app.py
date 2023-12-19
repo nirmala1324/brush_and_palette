@@ -517,7 +517,7 @@ def tambah_artwork():
         artist = ObjectId(artistID_receive)
         artworkTitle_receive = request.form.get('artworkTitle_give')
         artworkDesc_receive = request.form.get('artworkDesc_give')
-        artworkPrice_receive = np.int64(request.form.get('artworkPrice_give'))
+        artworkPrice_receive = int(request.form.get('artworkPrice_give'))
         artworkStock_receive = int(request.form.get('artworkStock_give'))
         # Randomize ID for Artwork
         artworkId = "AW_" + generate_random_id()
@@ -565,7 +565,7 @@ def edit_artwork():
     artistName_receive = request.form['artistName']
     artTitle_receive = request.form['editArtTitle']
     artDesc_receive = request.form['editArtDesc']
-    artPrice_receive = np.int64(request.form['editArtPrice'])
+    artPrice_receive = int(request.form['editArtPrice'])
     artStock_receive = int(request.form['editArtStock'])
     artPrevPhoto_receive = request.form['artworkPhoto']
     artNewPhoto_receive = request.files['editArtPhoto']
@@ -792,12 +792,14 @@ def profile(username):
             {'_id': False}
         )
         artists_data = list(db.artist.find({}, {"_id": 1, "fullname": 1}))
+        msg = request.args.get('msg')
 
         return render_template(
             'fans/profile.html',
             user_info=user_info,
             user_purchases=user_purchases,
-            artists_data=artists_data
+            artists_data=artists_data,
+            msg = msg
         )
 
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
