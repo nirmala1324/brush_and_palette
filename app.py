@@ -2,7 +2,6 @@ from pymongo import MongoClient
 from flask import Flask, render_template, jsonify, request, redirect, url_for, json
 import jwt
 import hashlib
-import uuid
 from bson.objectid import ObjectId
 from datetime import (
     datetime,  # representing and manipulating date and time
@@ -13,7 +12,6 @@ from datetime import (
 from werkzeug.utils import secure_filename
 import random
 import string
-import numpy as np
 
 import os
 from datetime import datetime, timedelta
